@@ -207,8 +207,21 @@ local function generate_starting_area(pos, surface)
 	end
 
 	if distance_from_spawn_wall < -10 then
+		local tile_name = surface.get_tile(pos).name
+		if tile_name == "water" or tile_name == "deepwater" then
+			surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
+		end
+	end
+
+	if distance_from_spawn_wall < -18 and math_random(1, 100) > 2 then
 		surface.set_tiles({{name = "refined-concrete", position = pos}}, true)
-		surface.set_hidden_tile(pos,get_replacement_tile(surface, pos))
+	end
+
+	if distance_from_spawn_wall > -15.5 and distance_from_spawn_wall < -15 then
+		create_mirrored_tile_chain(surface, {name = "refined-concrete", position = pos}, 15, 10)
+	end
+
+	if distance_from_spawn_wall < -10 then
 		return
 	end
 
