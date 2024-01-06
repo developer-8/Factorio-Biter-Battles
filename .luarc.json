@@ -1,0 +1,23 @@
+{
+  "misc": {
+    "parameters": ["--develop=true"]
+  },
+  "workspace": {
+    "library": [
+      "/Users/dan.farrell/Documents/factorio_dev_tools",
+      "/Users/dan.farrell/Library/Application Support/Steam/steamapps/common/Factorio/factorio.app/Contents/data",
+      "/Users/dan.farrell/Library/Application Support/Steam/steamapps/common/Factorio/factorio.app/Contents/data/core/lualib",
+      "/Users/dan.farrell/git/vscode-factoriomod-debug/luals-addon/factorio/factorio-plugin"
+    ],
+    "ignoreDir": [
+      "/Users/dan.farrell/git/vscode-factoriomod-debug/.vscode",
+      "/Users/dan.farrell/git/vscode-factoriomod-debug/test/factorio",
+      "/Users/dan.farrell/git/vscode-factoriomod-debug/luals-addon/factorio/library"
+    ]
+  },
+  "runtime": {
+    "x_plugin": "/Users/dan.farrell/git/vscode-factoriomod-debug/.vscode/lua/plugin.lua",
+    "plugin": "/Users/dan.farrell/git/vscode-factoriomod-debug/luals-addon/factorio/plugin.lua"
+      
+  }
+}

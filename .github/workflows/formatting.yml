@@ -1,0 +1,36 @@
+name: Formatting
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get all changed lua files
+      id: changed-lua-files
+      uses: tj-actions/changed-files@v41
+      with:
+        # Avoid using single or double quotes for multiline patterns
+        files: |
+           **.lua
+
+    - name: Check formatting for changed files
+      uses: JohnnyMorganz/stylua-action@v3
+      if: steps.changed-lua-files.outputs.any_changed == 'true'
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        version: v0.19.1
+        args: --check ${{ steps.changed-lua-files.outputs.all_changed_files }}
+
+    - name: Check formatting for all files
+      uses: JohnnyMorganz/stylua-action@v3
+      if: always()
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        version: v0.19.1
+        args: --check ${{ steps.changed-lua-files.outputs.all_changed_files }}
