@@ -1,6 +1,8 @@
 require('utils.data_stages')
 _LIFECYCLE = _STAGE.control -- Control stage
 
+tournament1vs1_mode = true
+
 require('utils.server')
 require('utils.server_commands')
 require('utils.utils')

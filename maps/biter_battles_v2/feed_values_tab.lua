@@ -103,7 +103,8 @@ local function add_feed_values(player, element, food_product_info)
             normalized_mutagen_value = mutagen_val
             normalized_resource_value = resources
         end
-        local scale = 1000 / (40 * 60) * Tables.food_values['space-science-pack'].value / mutagen_val
+        local max_food_value = math.max(table.unpack(Tables.food_value_table_version))
+        local scale = 1000 / (40 * 60) * max_food_value / mutagen_val
         resource_efficiency_tooltip = resource_efficiency_tooltip
             .. string.format(
                 '\n[img=item/%s] %.2f/s       %.0f/min',
@@ -166,7 +167,7 @@ local function build_config_gui(player, frame)
     frame_feed_values.clear()
 
     local food_product_info = {}
-    for food, _ in pairs(Tables.food_names) do
+    for food, _ in pairs(Tables.food_values) do
         food_product_info[food] = ItemCosts.get_info(food)
     end
 

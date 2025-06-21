@@ -207,6 +207,12 @@ function Public.queue_reveal_map()
     local width = 2000 -- for one side
     local height = 500 -- for one side
 
+    if tournament1vs1_mode then
+        width = 128
+        height = 128
+    end
+
+
     for x = 16, width, 32 do
         for y = 16, height, 32 do
             q_push(chart_queue, { { -x, -y }, { -x, -y } })

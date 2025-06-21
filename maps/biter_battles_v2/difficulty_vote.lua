@@ -327,7 +327,7 @@ local function on_gui_click(event)
         return
     end
 
-    if game.tick - storage.spectator_rejoin_delay[player.name] < 3600 then
+    if game.tick - storage.spectator_rejoin_delay[player.name] < 3600 and not tournament1vs1_mode then
         player.print(
             'Not ready to vote. Please wait '
                 .. 60 - (math.floor((game.tick - storage.spectator_rejoin_delay[player.name]) / 60))

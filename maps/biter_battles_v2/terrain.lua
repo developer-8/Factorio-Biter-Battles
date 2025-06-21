@@ -509,6 +509,10 @@ local function generate_starting_area(surface, chunk_pos, rng)
                 goto continue
             end
 
+            if tournament1vs1_mode then
+                goto continue
+            end
+
             wooden_chest_template.name = 'wooden-chest'
             wooden_chest_template.position = pos
             coal_template.position = pos

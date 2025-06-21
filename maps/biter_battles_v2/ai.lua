@@ -403,7 +403,7 @@ Public.raise_evo = function()
     local a_team_has_players = false
     for bf, pf in pairs(biter_teams) do
         if #game.forces[pf].connected_players > 0 then
-            Feeding.do_raw_feed(amount, 'automation-science-pack', bf)
+            Feeding.do_raw_feed(amount, Tables.food_long_and_short[1].long_name, bf)
             a_team_has_players = true
         end
     end
@@ -429,7 +429,7 @@ Public.reset_evo = function()
     local biter_teams = { ['north_biters'] = 'north', ['south_biters'] = 'south' }
     for bf, _ in pairs(biter_teams) do
         storage.bb_evolution[bf] = 0
-        Feeding.do_raw_feed(amount, 'automation-science-pack', bf)
+        Feeding.do_raw_feed(amount, Tables.food_long_and_short[1].long_name, bf)
     end
 end
 

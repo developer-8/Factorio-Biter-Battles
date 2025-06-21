@@ -1,3 +1,4 @@
+local Color = require "utils.color_presets"
 local bb_config = require('maps.biter_battles_v2.config')
 local FeedingCalculations = require('maps.biter_battles_v2.feeding_calculations')
 local Functions = require('maps.biter_battles_v2.functions')
@@ -293,6 +294,13 @@ function Public.feed_biters_from_inventory(player, food)
         player.print('Please wait for voting to finish before feeding')
         return
     end
+    if tournament1vs1_mode and tick < storage.feeding_timeout then
+        player.print(
+            "Please wait " .. math.round((storage.feeding_timeout - tick)/60) .. " seconds", 
+            { color = Color.red }
+        )
+        return
+    end
 
     local enemy_force_name = get_enemy_team_of(player.force.name) ---------------
     --enemy_force_name = player.force.name
@@ -346,27 +354,26 @@ function Public.feed_biters_mixed_from_inventory(player, button)
         player.print('Please wait for voting to finish before feeding')
         return
     end
+    if tournament1vs1_mode and tick < storage.feeding_timeout then
+        player.print(
+            "Please wait " .. math.round((storage.feeding_timeout - tick)/60) .. " seconds",
+            { color = Color.red }
+        )
+        return
+    end
+
     local enemy_force_name = get_enemy_team_of(player.force.name)
     local biter_force_name = enemy_force_name .. '_biters'
-    local food = {
-        'automation-science-pack',
-        'logistic-science-pack',
-        'military-science-pack',
-        'chemical-science-pack',
-        'production-science-pack',
-        'utility-science-pack',
-        'space-science-pack',
-    }
+
+    local food = {}
+    for k in pairs(food_values) do
+        table.insert(food, k)
+    end
+
     if button == defines.mouse_button_type.right then
-        food = {
-            'space-science-pack',
-            'utility-science-pack',
-            'production-science-pack',
-            'chemical-science-pack',
-            'military-science-pack',
-            'logistic-science-pack',
-            'automation-science-pack',
-        }
+        table.sort(food, function(a, b)
+            return food_values[a].value > food_values[b].value
+        end)
     end
     local i = player.character.get_main_inventory()
     if not i then
@@ -384,7 +391,7 @@ function Public.feed_biters_mixed_from_inventory(player, button)
         '[/color]',
     })
     local message = { colored_player_name, ' fed ' }
-    for k, v in pairs(food) do
+    for _, v in pairs(food) do
         local evolution_before_feed = storage.bb_evolution[biter_force_name]
         local threat_before_feed = storage.bb_threat[biter_force_name]
         local flask_amount = i.get_item_count(v)

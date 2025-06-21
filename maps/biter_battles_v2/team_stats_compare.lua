@@ -158,7 +158,10 @@ function TeamStatsCompare.show_stats(player)
     top_table.style.column_alignments[2] = 'center'
     top_table.style.column_alignments[3] = 'left'
     add_simple_force_stats('north', top_table)
-    local space_sci_mutagen = Tables.food_values['space-science-pack'].value
+
+    -- largest/last food  
+    local largest_food = Tables.food_long_and_short[#Tables.food_long_and_short].long_name
+    local space_sci_mutagen = Tables.food_values[largest_food].value
     if true then
         local shared_frame = top_table.add({ type = 'frame', name = 'summary_shared', direction = 'vertical' })
         local centering_table = shared_frame.add({ type = 'table', name = 'centering_table', column_count = 1 })
@@ -219,12 +222,12 @@ function TeamStatsCompare.show_stats(player)
             if not exclude_forces[force_name] then
                 add_small_label(science_table, {
                     caption = format_with_thousands_sep(produced),
-                    tooltip = '[item=space-science-pack] equivalent: '
+                    tooltip = '[item=' .. largest_food .. '] equivalent: '
                         .. format_one_sig_fig(produced * food_mutagen / space_sci_mutagen),
                 })
                 add_small_label(science_table, {
                     caption = format_with_thousands_sep(consumed),
-                    tooltip = '[item=space-science-pack] equivalent: '
+                    tooltip = '[item=' .. largest_food .. '] equivalent: '
                         .. format_one_sig_fig(consumed * food_mutagen / space_sci_mutagen),
                 })
             else
@@ -233,7 +236,7 @@ function TeamStatsCompare.show_stats(player)
             end
             add_small_label(science_table, {
                 caption = format_with_thousands_sep(sent),
-                tooltip = '[item=space-science-pack] equivalent: '
+                tooltip = '[item=' .. largest_food .. '] equivalent: '
                     .. format_one_sig_fig(sent * food_mutagen / space_sci_mutagen),
             })
             total_sent_mutagen = total_sent_mutagen + (food_stats.sent or 0) * food_mutagen
@@ -246,7 +249,7 @@ function TeamStatsCompare.show_stats(player)
         end
         add_small_label(science_flow, {
             caption = string_format(
-                '[item=space-science-pack] equivalent%s sent: %s',
+                '[item=' .. largest_food .. '] equivalent%s sent: %s',
                 produced_info,
                 format_one_sig_fig(total_sent_mutagen / space_sci_mutagen)
             ),

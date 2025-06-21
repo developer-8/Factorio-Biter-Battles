@@ -13,6 +13,7 @@ local Muted = require('utils.muted')
 ---Disabled according to discord poll https://discord.com/channels/823696400797138974/823771211421974579/1241772236268896276
 -- local SimpleTags = require 'modules.simple_tags'
 local Team_manager = require('maps.biter_battles_v2.team_manager')
+local Tournament1vs1 = require('maps.biter_battles_v2.tournament1vs1')
 local Shortcuts = require('maps.biter_battles_v2.shortcuts')
 local Terrain = require('maps.biter_battles_v2.terrain')
 local Session = require('utils.datastore.session_data')
@@ -111,6 +112,23 @@ local function on_research_finished(event)
     game.forces.spectator.print(
         Functions.team_name_with_color(force.name) .. ' completed research [technology=' .. name .. ']'
     )
+
+    if tournament1vs1_mode then
+        if event.research.name == "flamethrower" then
+            event.research.force.recipes["flamethrower-turret"].enabled = false
+            return
+        end
+        if event.research.name == "laser-turret" then
+            event.research.force.recipes["laser-turret"].enabled = false
+            return
+        end
+        if event.research.name == "military-3" then
+            event.research.force.recipes["poison-capsule"].enabled = false
+            event.research.force.recipes["slowdown-capsule"].enabled = false
+            return
+        end
+    end
+
     ResearchInfo.research_finished(name, force)
 end
 
@@ -699,6 +717,7 @@ local function on_init()
     Init.playground_surface()
     Init.forces()
     Init.draw_structures()
+    Tournament1vs1.tournament1vs1_mode_init()
     Init.queue_reveal_map()
 end
 

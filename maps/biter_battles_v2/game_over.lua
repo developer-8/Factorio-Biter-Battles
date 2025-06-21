@@ -11,6 +11,7 @@ local Server = require('utils.server')
 local Special_games = require('comfy_panel.special_games')
 local Tables = require('maps.biter_battles_v2.tables')
 local Announce = require('commands.announce')
+local Tournament1vs1 = require('maps.biter_battles_v2.tournament1vs1')
 local Task = require('utils.task')
 local Token = require('utils.token')
 local team_stats_compare = require('maps.biter_battles_v2.team_stats_compare')
@@ -888,6 +889,7 @@ function Public.generate_new_map()
         end
         BBGui.create_main_gui(player)
     end
+    Tournament1vs1.setup_new_game()
     game.reset_time_played()
     storage.server_restart_timer = nil
     game.delete_surface(prev_surface)

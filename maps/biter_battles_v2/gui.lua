@@ -13,7 +13,7 @@ local ResearchInfo = require('maps.biter_battles_v2.research_info')
 local Server = require('utils.server')
 local Shortcuts = require('maps.biter_battles_v2.shortcuts')
 local Tables = require('maps.biter_battles_v2.tables')
-local TeamStatsCompare = require('maps.biter_battles_v2.team_stats_compare')
+local Tournament1vs1 = require('maps.biter_battles_v2.tournament1vs1')
 local gui_style = require('utils.utils').gui_style
 local has_life = require('comfy_panel.special_games.limited_lives').has_life
 
@@ -24,6 +24,7 @@ local math_abs = math.abs
 local math_ceil = math.ceil
 local math_floor = math.floor
 local string_format = string.format
+local ternary = require('utils.utils').ternary
 
 local Public = {}
 storage.player_data_afk = {}
@@ -114,6 +115,9 @@ end
 local function drop_burners(player, forced_join)
     if forced_join then
         storage.got_burners[player.name] = nil
+        return
+    end
+    if tournament1vs1_mode then
         return
     end
     if storage.training_mode or not storage.bb_settings.burners_balance then
@@ -436,6 +440,10 @@ function Public.create_main_gui(player)
         Gui.add_left_element(player, { type = 'frame', name = 'bb_main_gui', direction = 'vertical', index = 1 })
     gui_style(main_frame, { maximal_width = 325 })
 
+    if tournament1vs1_mode then
+        gui_style(main_frame, { maximal_width = 245 })
+    end
+
     local flow = main_frame.add({ type = 'flow', name = 'flow', style = 'vertical_flow', direction = 'vertical' })
     local inner_frame = flow.add({
         type = 'frame',
@@ -634,6 +642,15 @@ function Public.create_main_gui(player)
         local label = flow.add({ type = 'label', caption = 'Options', style = 'caption_label' })
         Gui.add_pusher(flow)
 
+        if tournament1vs1_mode then
+            local button = flow.add({
+                type = 'button',
+                name = 'tournament1vs1_ready',
+                caption = 'Ready'
+            })
+            gui_style(button, { padding = 2, maximal_width = 54, maximal_height = 28 })
+        end
+
         local button = flow.add({
             type = 'sprite-button',
             name = 'bb_resume',
@@ -651,6 +668,34 @@ function Public.create_main_gui(player)
             style = 'forward_button',
         })
         gui_style(button, { padding = 2, maximal_width = 38, maximal_height = 28 })
+    end
+
+    -- Tournament1vs1 admin controls
+    if tournament1vs1_mode then
+        local join_frame =
+        sp.add({ type = 'frame', name = 'tournament1vs1_frame', style = 'bordered_frame', direction = 'vertical' })
+        gui_style(join_frame, { vertical_align = 'center' })
+
+        local flow = join_frame.add({ type = 'flow', name = 'tournament1vs1_admin', direction = 'horizontal' })
+        gui_style(flow, { vertical_align = 'center', horizontal_spacing = 4 })
+
+        local button = flow.add({
+            type = 'button',
+            name = 'tournament1vs1_force_start',
+            tooltip = style.bold('Force start'),
+            caption = 'Force start'
+        })
+        gui_style(button, { padding = 2, maximal_width = 88, maximal_height = 28 })
+
+        Gui.add_pusher(flow)
+
+        local button = flow.add({
+            type = 'sprite-button',
+            name = 'tournament1vs1_pause_toggle',
+            caption = ternary(game.tick_paused, 'Unpause', 'Pause'),
+            style = 'tool_button',
+        })
+        gui_style(button, { padding = 2, maximal_width = 70, maximal_height = 28 })
     end
 
     -- == SUBFOOTER ===============================================================
@@ -814,6 +859,21 @@ function Public.refresh_main_gui(player, data)
         resume.bb_resume.visible = _DEBUG or is_spec
         resume.bb_spectate.visible = _DEBUG or not is_spec
         main.join_frame.visible = assign.visible or resume.visible
+
+        -- 1vs1 tournament ready
+        if resume.tournament1vs1_ready then
+            resume.tournament1vs1_ready.visible = _DEBUG or not is_spec
+            resume.tournament1vs1_ready.enabled = _DEBUG or not storage.players_ready[player.force.name]
+        end
+    end
+
+    do -- tournament1vs1 admin
+        local t_frame = main.tournament1vs1_frame
+        if t_frame then
+            t_frame.visible = _DEBUG or player.admin
+            t_frame.tournament1vs1_admin.tournament1vs1_force_start.enabled = not storage.tournament1vs1_started
+            t_frame.tournament1vs1_admin.tournament1vs1_pause_toggle.caption = ternary(game.tick_paused, 'Unpause', 'Pause')
+        end
     end
 
     -- == SUBFOOTER ===============================================================
@@ -822,6 +882,11 @@ function Public.refresh_main_gui(player, data)
             or storage.bb_show_research_info == 'always'
             or (storage.bb_show_research_info == 'spec' and player.force.name == 'spectator')
             or (storage.bb_show_research_info == 'pure-spec' and not storage.chosen_team[player.name])
+
+        footer.bb_floating_shortcuts_team_statistics.visible = _DEBUG
+            or storage.allow_teamstats == 'always'
+            or (storage.allow_teamstats == 'spec' and player.force.name == 'spectator')
+            or (storage.allow_teamstats == 'pure-spec' and not storage.chosen_team[player.name])
     end
 end
 
@@ -870,6 +935,9 @@ function Public.burners_balance(player)
         return
     end
     if storage.got_burners[player.name] then
+        return
+    end
+    if tournament1vs1_mode then
         return
     end
     if storage.training_mode or not storage.bb_settings.burners_balance then
@@ -1065,12 +1133,14 @@ function join_team(player, force_name, forced_join, auto_join)
 
     local i = player.character.get_inventory(defines.inventory.character_main)
     i.clear()
-    player.insert({ name = 'pistol', count = 1 })
-    player.insert({ name = 'raw-fish', count = 3 })
-    player.insert({ name = 'firearm-magazine', count = 32 })
-    player.insert({ name = 'iron-gear-wheel', count = 8 })
-    player.insert({ name = 'iron-plate', count = 16 })
-    player.insert({ name = 'wood', count = 2 })
+    if not tournament1vs1_mode then
+        player.insert({ name = 'pistol', count = 1 })
+        player.insert({ name = 'raw-fish', count = 3 })
+        player.insert({ name = 'firearm-magazine', count = 32 })
+        player.insert({ name = 'iron-gear-wheel', count = 8 })
+        player.insert({ name = 'iron-plate', count = 16 })
+        player.insert({ name = 'wood', count = 2 })
+    end
     storage.chosen_team[player.name] = force_name
     storage.spectator_rejoin_delay[player.name] = game.tick
     player.spectator = false
@@ -1376,11 +1446,37 @@ local function on_gui_click(event)
             )
         end
     end
+
+    -- 1vs1 tournament  buttons
+    if name == "tournament1vs1_ready" then
+        element.enabled = false
+        Tournament1vs1.player_ready(player)
+        return
+	end
+
+	if name == "tournament1vs1_force_start" then
+        element.enabled = false
+        game.print("The game has been force-started by " .. player.name, {r = 255, g = 255, b = 0})
+		Tournament1vs1.prepare_start_tournament1vs1_game()
+		return
+	end
+
+	if name == "tournament1vs1_pause_toggle" then
+        if game.tick_paused then
+            game.tick_paused = false
+            game.print("The game has been unpaused by " .. player.name, {r = 255, g = 255, b = 0})
+        else
+            game.tick_paused = true
+            game.print("The game has been paused by " .. player.name, {r = 255, g = 255, b = 0})
+        end
+        Public.refresh()
+		return
+	end
 end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
-    if player.online_time == 0 then
+    if player.online_time == 0 and not tournament1vs1_mode then
         Functions.show_intro(player)
     end
 
