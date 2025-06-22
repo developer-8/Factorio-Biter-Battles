@@ -69,6 +69,9 @@ function Public.setup_new_game()
 end
 
 function Public.start_tournament1vs1_game()
+    local f = game.forces['spectator']
+    f.set_friend('north', false)
+    f.set_friend('south', false)
     Functions.set_game_start_tick()
     if storage.freeze_players then
         storage.freeze_players = false

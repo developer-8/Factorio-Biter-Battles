@@ -106,7 +106,7 @@ local function on_research_finished(event)
     if name == 'uranium-processing' then
         force.technologies['uranium-ammo'].researched = true
         force.technologies['kovarex-enrichment-process'].researched = true
-    elseif name == 'stone-wall' then
+    elseif name == 'stone-wall' and not tournament1vs1_mode then
         force.technologies['gate'].researched = true
     end
     game.forces.spectator.print(
