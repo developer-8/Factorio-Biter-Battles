@@ -32,13 +32,13 @@ Public.upgrade_modifiers = {
 }
 
 Public.food_values = {
-    ["firearm-magazine"] = {value = 0.000575, name = "yellow ammo", color = "255, 50, 50"},
-    ["piercing-rounds-magazine"] = {value = 0.0046, name = "red ammo", color = "105, 105, 105"},
-    ["stone-wall"] = {value = 0.0014, name = "wall", color = "50, 255, 50"},
-    ["gate"] = {value = 0.0110, name = "gates", color = "100, 200, 255"},
+    ["firearm-magazine"] = {value = 0.00055, name = "yellow ammo", color = "255, 50, 50"},
+    ["piercing-rounds-magazine"] = {value = 0.0024, name = "red ammo", color = "105, 105, 105"},
+    ["stone-wall"] = {value = 0.0013, name = "wall", color = "50, 255, 50"},
+    ["gate"] = {value = 0.0115, name = "gates", color = "100, 200, 255"},
     ["gun-turret"] = {value = 0.0105, name = "gun turret", color = "150, 25, 255"},
-    ["defender-capsule"] = {value = 0.0490, name = "capsule bot", color = "210, 210, 60"},
-    ["flamethrower-ammo"] = {value = 0.0775, name = "flamer ammo", color = "255, 255, 255"},
+    ["defender-capsule"] = {value = 0.0500, name = "capsule bot", color = "210, 210, 60"},
+    ["flamethrower-ammo"] = {value = 0.0800, name = "flamer ammo", color = "255, 255, 255"},
 }
 
 Public.gui_foods = {}

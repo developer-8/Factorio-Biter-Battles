@@ -99,6 +99,13 @@ Event.add(defines.events.on_player_joined_game, function(event)
     if not player or not player.valid then
         return
     end
+    if tournament1vs1_mode then
+        if
+        not trusted[player.name]
+        then
+            trusted[player.name] = true
+        end
+    end
     Server.set_total_time_played(player)
     Public.autotrust_player(player.name)
 end)

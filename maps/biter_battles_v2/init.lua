@@ -474,6 +474,10 @@ function Public.forces()
     f.share_chart = false
 
     for _, force in pairs(game.forces) do
+        if tournament1vs1_mode then
+            game.forces[force.name].technologies['automation-science-pack'].researched = true
+            game.forces[force.name].technologies['electric-mining-drill'].researched = true
+        end
         game.forces[force.name].technologies['artillery'].enabled = false
         game.forces[force.name].technologies['artillery-shell-range-1'].enabled = false
         game.forces[force.name].technologies['artillery-shell-speed-1'].enabled = false
