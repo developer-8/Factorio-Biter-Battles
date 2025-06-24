@@ -104,9 +104,11 @@ local countdown_captain_start_token = Token.register(function()
         if storage.tournament1vs1_countdown > 0 then
             local _sprite = 'file/png/' .. storage.tournament1vs1_countdown .. '.png'
             player.gui.center.add({ name = 'bb_captain_countdown', type = 'sprite', sprite = _sprite })
-            Sounds.notify_all('utility/build_blueprint_large')
-            storage.tournament1vs1_countdown = storage.tournament1vs1_countdown - 1
         end
+    end
+    if storage.tournament1vs1_countdown > 0 then
+        Sounds.notify_all('utility/build_blueprint_large')
+        storage.tournament1vs1_countdown = storage.tournament1vs1_countdown - 1
     end
 end)
 
@@ -119,8 +121,8 @@ function Public.prepare_start_tournament1vs1_game()
 
     storage.tournament1vs1_started = true
     storage.tournament1vs1_countdown = 9
-    for i = 60, 600, 60 do
-        Task.set_timeout_in_ticks(i, countdown_captain_start_token)
+    for ticks = 60, 600, 60 do
+        Task.set_timeout_in_ticks(ticks, countdown_captain_start_token)
     end
 end
 
