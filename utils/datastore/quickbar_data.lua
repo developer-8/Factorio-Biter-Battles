@@ -267,6 +267,10 @@ Event.add(defines.events.on_player_joined_game, function(event)
         return
     end
 
+    if tournament1vs1_mode and player.online_time == 0 then
+        load_quickbar(player)
+    end
+
     local secs = Server.get_current_time()
     if not secs then
         return
