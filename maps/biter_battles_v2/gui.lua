@@ -885,8 +885,8 @@ function Public.refresh_main_gui(player, data)
 
         footer.bb_floating_shortcuts_team_statistics.visible = _DEBUG
             or storage.allow_teamstats == 'always'
-            or (storage.allow_teamstats == 'spec' and player.force.name == 'spectator')
-            or (storage.allow_teamstats == 'pure-spec' and not storage.chosen_team[player.name])
+            or (storage.allow_teamstats == 'spectator' and player.force.name == 'spectator')
+            or (storage.allow_teamstats == 'pure-spectator' and not storage.chosen_team[player.name])
     end
 end
 
