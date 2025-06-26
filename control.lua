@@ -1,4 +1,4 @@
-require('utils.data_stages')
+require("utils.data_stages")
 _LIFECYCLE = _STAGE.control -- Control stage
 
 require('utils.server')
