@@ -9,6 +9,10 @@ on:
 jobs:
   check_code_format:
     runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: JohnnyMorganz/stylua-action@v4
@@ -16,3 +20,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
           args: --check .
+      - uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: Apply stylua changes
