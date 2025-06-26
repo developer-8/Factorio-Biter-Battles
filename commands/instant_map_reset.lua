@@ -6,7 +6,7 @@ local Public = {}
 function Public.instant_map_reset(cmd)
     local player = cmd.player_index and game.get_player(cmd.player_index)
     if player then
-        if not player.admin then
+        if not is_admin(player) then
             log('not admin player exists')
             player.print("[ERROR] You're not admin!", { color = Color.fail })
             return

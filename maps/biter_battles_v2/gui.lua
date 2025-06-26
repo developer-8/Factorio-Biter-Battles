@@ -1,6 +1,6 @@
 local _DEBUG = false
 
-local bb_config = require('maps.biter_battles_v2.config')
+local Admin = require('utils.admin')
 local Captain_event = require('comfy_panel.special_games.captain')
 local Color = require('utils.color_presets')
 local DifficultyVote = require('maps.biter_battles_v2.difficulty_vote')
@@ -870,7 +870,7 @@ function Public.refresh_main_gui(player, data)
     do -- tournament1vs1 admin
         local t_frame = main.tournament1vs1_frame
         if t_frame then
-            t_frame.visible = _DEBUG or player.admin
+            t_frame.visible = _DEBUG or is_admin(player)
             t_frame.tournament1vs1_admin.tournament1vs1_force_start.enabled = not storage.tournament1vs1_started
             t_frame.tournament1vs1_admin.tournament1vs1_pause_toggle.caption = ternary(game.tick_paused, 'Unpause', 'Pause')
         end
@@ -1133,7 +1133,9 @@ function join_team(player, force_name, forced_join, auto_join)
 
     local i = player.character.get_inventory(defines.inventory.character_main)
     i.clear()
-    if not tournament1vs1_mode then
+    if tournament1vs1_mode then
+        Admin.swith_to_player_mode(player, false)
+    else
         player.insert({ name = 'pistol', count = 1 })
         player.insert({ name = 'raw-fish', count = 3 })
         player.insert({ name = 'firearm-magazine', count = 32 })

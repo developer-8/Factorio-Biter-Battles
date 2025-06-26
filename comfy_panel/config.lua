@@ -369,7 +369,7 @@ local build_config_gui = function(player, frame)
     local switch_state
     local label
 
-    local admin = player.admin
+    local admin = is_admin(player)
     frame.clear()
 
     local scroll_pane = frame.add({

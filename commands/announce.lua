@@ -52,7 +52,7 @@ local function announce(cmd)
         return
     end
 
-    if not player.admin then
+    if not is_admin(player) then
         player.print('This command can only be used by admins')
         return
     end
