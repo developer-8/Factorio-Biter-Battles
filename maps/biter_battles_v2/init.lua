@@ -473,8 +473,11 @@ function Public.forces()
     f.set_cease_fire('south', true)
     f.share_chart = false
 
-    for _, force_name in pairs({ 'north', 'south' }) do
-        if tournament1vs1_mode then
+    if tournament1vs1_mode then
+        local f = game.forces['spectator']
+        f.set_friend('north', false)
+        f.set_friend('south', false)
+        for _, force_name in pairs({ 'north', 'south' }) do
             game.forces[force_name].technologies['automation-science-pack'].researched = true
             game.forces[force_name].technologies['electric-mining-drill'].researched = true
         end
