@@ -138,6 +138,9 @@ function Public.calculate_strike_position(unit_group, target_position)
     local normalized_source_position = { x = source_position.x, y = math_abs(source_position.y) }
     local normalized_target_position = { x = target_position.x, y = math_abs(target_position.y) }
     local boundary_offset = bb_config.border_river_width / 2
+    if tournament1vs1_mode then
+        boundary_offset = storage.boundary_offset
+    end
     local nominal_strike_position =
         select_strike_position(normalized_source_position, normalized_target_position, boundary_offset)
     if source_position.y < 0 then
