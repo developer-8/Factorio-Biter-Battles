@@ -132,6 +132,7 @@ function Public.tournament1vs1_mode_init()
     storage.bb_settings.map_reroll = false
     storage.feeding_timeout = 4 * 60 * 60
     storage.boundary_offset = 200
+    storage.MAX_STRIKE_DISTANCE = 400
 
     Public.setup_new_game()
 end

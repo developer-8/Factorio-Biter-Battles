@@ -107,6 +107,9 @@ local function select_strike_position(source_position, target_position, boundary
             y = source_position.y,
         }
     end
+    if tournament1vs1_mode then
+        MAX_STRIKE_DISTANCE = storage.MAX_STRIKE_DISTANCE
+    end
     local strike_distance = math_random(MIN_STRIKE_DISTANCE, math_min(source_target_distance, MAX_STRIKE_DISTANCE))
     local strike_angle_range = calculate_strike_range(
         source_target_dx,
