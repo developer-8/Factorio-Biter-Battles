@@ -477,6 +477,8 @@ function Public.forces()
         local f = game.forces['spectator']
         f.set_friend('north', false)
         f.set_friend('south', false)
+        f.set_friend('north_biters', true)
+        f.set_friend('south_biters', true)
         for _, force_name in pairs({ 'north', 'south' }) do
             game.forces[force_name].technologies['automation-science-pack'].researched = true
             game.forces[force_name].technologies['electric-mining-drill'].researched = true

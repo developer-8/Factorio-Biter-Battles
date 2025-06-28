@@ -166,45 +166,6 @@ Event.add(defines.events.on_multiplayer_init, function()
     storage.tournament_mode = true
 end)
 
-
---- add custom player killed message for spectators
---- because spectators are not friends with players in a 1v1 game 
---- and therefore cannot see the in-game messages that a player has been killed
-Event.add(defines.events.on_player_died, function(event)
-    if not tournament1vs1_mode then
-        return
-    end
-
-    local player = game.get_player(event.player_index)
-
-    if not player or not player.valid then
-        return
-    end
-
-    local message = { "", player.name }
-
-    local cause = event.cause
-    if cause and cause.valid then
-        message[#message + 1] = ' was killed by '
-
-        if cause.name == 'character' and cause.player then
-            message[#message + 1] = cause.player.name
-        else
-            message[#message + 1] = {"", cause.localised_name}
-        end
-    else
-        message[#message + 1] = ' has died '
-    end
-
-    local character = player.character
-    if character and character.valid then
-        message[#message + 1] = ' at '
-        message[#message + 1] = character.gps_tag
-    end
-
-    game.forces["spectator"].print(message)
-end)
-
 commands.add_command(
     'tournament1vs1',
     'Switch game to 1vs1 tournament mode',
