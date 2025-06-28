@@ -462,6 +462,9 @@ commands.add_command('inventory', 'Opens a players inventory!', function(cmd)
         if not cmd.parameter then
             return
         end
+        if tournament1vs1_mode and (player.force.name == "south" or player.force.name == "north") then
+            return
+        end
         local target_player = game.get_player(cmd.parameter)
 
         local valid, opened = player_opened(player)
