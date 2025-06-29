@@ -156,10 +156,16 @@ local function add_feed_values(player, element, food_product_info)
         })
         label.style.minimal_width = headersSummary[4][1]
         label.style.horizontal_align = 'right'
+
+        local format_string = '%.2fx [img=info]'
+        if tournament1vs1_mode then
+            resource_efficiency_tooltip = ''
+            format_string = '%.2fx'
+        end
         local label = t_summary.add({
             type = 'label',
             caption = string.format(
-                '%.2fx [img=info]',
+                format_string,
                 (mutagen_val / normalized_mutagen_value) / (resources / normalized_resource_value)
             ),
             tooltip = resource_efficiency_tooltip,
