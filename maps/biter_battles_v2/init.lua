@@ -474,9 +474,6 @@ function Public.forces()
     f.share_chart = false
 
     if tournament1vs1_mode then
-        local f = game.forces['spectator']
-        f.set_friend('north', false)
-        f.set_friend('south', false)
         f.set_friend('north_biters', true)
         f.set_friend('south_biters', true)
         for _, force_name in pairs({ 'north', 'south' }) do

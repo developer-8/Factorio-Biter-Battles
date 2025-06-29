@@ -114,6 +114,12 @@ function Public.prepare_start_tournament1vs1_game()
         return
     end
 
+    -- make spectator enemy to not share cursors with players
+    -- do it just before game starts so map reveal shared with players 
+    local f = game.forces['spectator']
+    f.set_friend('north', false)
+    f.set_friend('south', false)
+
     storage.difficulty_votes_timeout = 0
 
     storage.tournament1vs1_started = true
