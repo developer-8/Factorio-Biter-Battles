@@ -53,16 +53,23 @@ local function on_event(event)
     if not handlers then
         handlers = event_handlers[event.input_name]
     end
-    local profiler = event_profilers[event.name]
-    if not profiler then
-        profiler = { profiler = game.create_profiler(), count = 1 }
-        event_profilers[event.name] = profiler
-    else
-        profiler.profiler.restart()
-        profiler.count = profiler.count + 1
+
+    if not tournament1vs1_mode then
+        local profiler = event_profilers[event.name]
+        if not profiler then
+            profiler = { profiler = game.create_profiler(), count = 1 }
+            event_profilers[event.name] = profiler
+        else
+            profiler.profiler.restart()
+            profiler.count = profiler.count + 1
+        end
     end
+
     call_handlers(handlers, event)
-    profiler.profiler.stop()
+
+    if not tournament1vs1_mode then
+        profiler.profiler.stop()
+    end
 end
 
 local function on_init()
@@ -89,16 +96,23 @@ end
 
 local function on_nth_tick_event(event)
     local handlers = on_nth_tick_event_handlers[event.nth_tick]
-    local profiler = on_nth_tick_event_profilers[event.nth_tick]
-    if not profiler then
-        profiler = { profiler = game.create_profiler(), count = 1 }
-        on_nth_tick_event_profilers[event.nth_tick] = profiler
-    else
-        profiler.profiler.restart()
-        profiler.count = profiler.count + 1
+
+    if not tournament1vs1_mode then
+        local profiler = on_nth_tick_event_profilers[event.nth_tick]
+        if not profiler then
+            profiler = { profiler = game.create_profiler(), count = 1 }
+            on_nth_tick_event_profilers[event.nth_tick] = profiler
+        else
+            profiler.profiler.restart()
+            profiler.count = profiler.count + 1
+        end
     end
+
     call_handlers(handlers, event)
-    profiler.profiler.stop()
+
+    if not tournament1vs1_mode then
+        profiler.profiler.stop()
+    end
 end
 
 --- Do not use this function, use Event.add instead as it has safety checks.
@@ -169,6 +183,10 @@ function Public.get_on_nth_tick_event_handlers()
 end
 
 local function update_profilers()
+    if tournament1vs1_mode then
+        return
+    end
+
     local profiler
     for event_name, profiler in pairs(event_profilers) do
         log({ '', 'event_handlers[', event_names[event_name], ']: ', profiler.count, ' times, ', profiler.profiler })

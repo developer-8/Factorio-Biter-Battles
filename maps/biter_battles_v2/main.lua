@@ -577,11 +577,13 @@ local function on_tick()
             Init.pop_chunk_request(65)
         end)
     end
-    if tick % 3600 == 0 then
-        for key, profiler in pairs(on_tick_profilers) do
-            log({ '', 'on_tick_profilers[', key, ']: ', profiler.count, ' times, ', profiler.profiler })
+    if not tournament1vs1_mode then
+        if tick % 3600 == 0 then
+            for key, profiler in pairs(on_tick_profilers) do
+                log({ '', 'on_tick_profilers[', key, ']: ', profiler.count, ' times, ', profiler.profiler })
+            end
+            on_tick_profilers = {}
         end
-        on_tick_profilers = {}
     end
 end
 
