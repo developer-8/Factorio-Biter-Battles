@@ -59,6 +59,9 @@ function Public.setup_new_game()
         game.print('>>> Players have been frozen!', { color = { r = 111, g = 111, b = 255 } })
     end
 
+    storage.difficulty_vote_value = 1
+    storage.difficulty_vote_index = 5
+
 	storage.allow_teamstats = 'spectator'
 	storage.bb_show_research_info = 'spec'
 	storage.tournament1vs1_started = false
