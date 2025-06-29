@@ -31,6 +31,51 @@ local function get_science_text(food_name, food_short_name)
     })
 end
 
+local function is_filter_by_dropdown_science(food_name, dropdown_science)
+    if dropdown_science.selected_index == 1 then
+        return true
+    end
+
+    local easy_food_name = food_long_to_short[food_name].short_name
+
+    if tournament1vs1_mode then
+        
+        if dropdown_science.selected_index == 2 then
+            return easy_food_name:match('ammo')
+        end
+
+        if dropdown_science.selected_index == 3 then
+            return easy_food_name:match('wall')
+                or easy_food_name:match('gate')
+        end
+
+        return easy_food_name:match(dropdown_science.get_item(dropdown_science.selected_index))
+    end
+
+    if dropdown_science.selected_index == 2 then
+        return easy_food_name:match('space')
+            or easy_food_name:match('utility')
+            or easy_food_name:match('production')
+    end
+
+    if dropdown_science.selected_index == 3 then
+        return easy_food_name:match('space')
+            or easy_food_name:match('utility')
+            or easy_food_name:match('production')
+            or easy_food_name:match('chemical')
+    end
+
+    if dropdown_science.selected_index == 4 then
+        return easy_food_name:match('space')
+            or easy_food_name:match('utility')
+            or easy_food_name:match('production')
+            or easy_food_name:match('chemical')
+            or easy_food_name:match('military')
+    end
+
+    return easy_food_name:match(dropdown_science.get_item(dropdown_science.selected_index))
+end
+
 ---@param player LuaPlayer
 ---@param element LuaGuiElement
 local function add_science_logs(player, element)
@@ -201,26 +246,14 @@ local function add_science_logs(player, element)
         for i = 1, #storage.science_logs_date, 1 do
             local real_force_name = storage.science_logs_fed_team[i]
             local custom_force_name = Functions.team_name_with_color(real_force_name)
-            local easy_food_name = food_long_to_short[storage.science_logs_food_name[i]].short_name
+            local log_food_name = storage.science_logs_food_name[i]
 
             if
                 dropdown_force.selected_index == 1
                 or real_force_name:match(dropdown_force.get_item(dropdown_force.selected_index))
             then
                 if
-                    dropdown_science.selected_index == 1
-                    or (dropdown_science.selected_index == 2 and (easy_food_name:match('space') or easy_food_name:match(
-                        'utility'
-                    ) or easy_food_name:match('production')))
-                    or (dropdown_science.selected_index == 3 and (easy_food_name:match('space') or easy_food_name:match(
-                        'utility'
-                    ) or easy_food_name:match('production') or easy_food_name:match('chemical')))
-                    or (dropdown_science.selected_index == 4 and (easy_food_name:match('space') or easy_food_name:match(
-                        'utility'
-                    ) or easy_food_name:match('production') or easy_food_name:match('chemical') or easy_food_name:match(
-                        'military'
-                    )))
-                    or easy_food_name:match(dropdown_science.get_item(dropdown_science.selected_index))
+                    is_filter_by_dropdown_science(log_food_name, dropdown_science)
                 then
                     if
                         dropdown_evofilter.selected_index == 1
