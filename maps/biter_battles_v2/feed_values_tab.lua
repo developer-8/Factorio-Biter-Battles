@@ -53,7 +53,7 @@ local function add_feed_values(player, element, food_product_info)
     local t_summary = science_scrollpanel.add({
         type = 'table',
         name = 'feed_values_summary_header_table',
-        column_count = 4,
+        column_count = 5,
         draw_horizontal_lines = false,
     })
     t_summary.style.top_cell_padding = 2
@@ -62,7 +62,12 @@ local function add_feed_values(player, element, food_product_info)
         { 100, '', nil },
         {
             100,
-            'Mutagen [img=info]',
+            'Raw Mutagen [img=info]',
+            'A raw value for how much mutagen is produced by sending 1 of this item. Higher values will generate more threat and more evo% increase',
+        },
+        {
+            150,
+            'Normalized Mutagen [img=info]',
             'A normalized value for how much mutagen is produced by sending 1 of this item. Higher values will generate more threat and more evo% increase',
         },
         {
@@ -136,15 +141,20 @@ local function add_feed_values(player, element, food_product_info)
             caption = get_science_text(food_long_and_short[i].long_name, food_long_and_short[i].short_name),
         })
         local label =
-            t_summary.add({ type = 'label', caption = string.format('%.1fx', mutagen_val / normalized_mutagen_value) })
+            t_summary.add({ type = 'label', caption = string.format('%.1f', mutagen_val * 10000) })
         label.style.minimal_width = headersSummary[2][1]
+        label.style.horizontal_align = 'right'
+
+        local label =
+            t_summary.add({ type = 'label', caption = string.format('%.1fx', mutagen_val / normalized_mutagen_value) })
+        label.style.minimal_width = headersSummary[3][1]
         label.style.horizontal_align = 'right'
         local label = t_summary.add({
             type = 'label',
             caption = string.format('%.0f [img=info]', resources / 10),
             tooltip = resources_tooltip,
         })
-        label.style.minimal_width = headersSummary[3][1]
+        label.style.minimal_width = headersSummary[4][1]
         label.style.horizontal_align = 'right'
         local label = t_summary.add({
             type = 'label',
@@ -154,7 +164,7 @@ local function add_feed_values(player, element, food_product_info)
             ),
             tooltip = resource_efficiency_tooltip,
         })
-        label.style.minimal_width = headersSummary[4][1]
+        label.style.minimal_width = headersSummary[5][1]
         label.style.horizontal_align = 'right'
     end
 end
