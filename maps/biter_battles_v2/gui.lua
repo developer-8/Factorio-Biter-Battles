@@ -642,15 +642,6 @@ function Public.create_main_gui(player)
         local label = flow.add({ type = 'label', caption = 'Options', style = 'caption_label' })
         Gui.add_pusher(flow)
 
-        if tournament1vs1_mode then
-            local button = flow.add({
-                type = 'button',
-                name = 'tournament1vs1_ready',
-                caption = 'Ready'
-            })
-            gui_style(button, { padding = 2, maximal_width = 54, maximal_height = 28 })
-        end
-
         local button = flow.add({
             type = 'sprite-button',
             name = 'bb_resume',
@@ -675,6 +666,18 @@ function Public.create_main_gui(player)
         local join_frame =
         sp.add({ type = 'frame', name = 'tournament1vs1_frame', style = 'bordered_frame', direction = 'vertical' })
         gui_style(join_frame, { vertical_align = 'center' })
+
+        local flow = join_frame.add({ type = 'flow', name = 'tournament1vs1_player', direction = 'horizontal' })
+        gui_style(flow, { vertical_align = 'center', horizontal_spacing = 4 })
+
+        Gui.add_pusher(flow)
+
+        local button = flow.add({
+            type = 'button',
+            name = 'tournament1vs1_ready',
+            caption = 'Ready'
+        })
+        gui_style(button, { padding = 2, maximal_width = 54, maximal_height = 28 })
 
         local flow = join_frame.add({ type = 'flow', name = 'tournament1vs1_admin', direction = 'horizontal' })
         gui_style(flow, { vertical_align = 'center', horizontal_spacing = 4 })
@@ -860,24 +863,32 @@ function Public.refresh_main_gui(player, data)
         resume.bb_spectate.visible = _DEBUG or not is_spec
         main.join_frame.visible = assign.visible or resume.visible
 
-        -- 1vs1 tournament ready
-        if resume.tournament1vs1_ready then
-            resume.tournament1vs1_ready.visible = _DEBUG or not is_spec
-            resume.tournament1vs1_ready.enabled = _DEBUG or not storage.players_ready[player.force.name]
+        if tournament1vs1_mode and storage.tournament_mode then
+            main.join_frame.visible = false
         end
     end
 
     do -- tournament1vs1 admin
         local t_frame = main.tournament1vs1_frame
         if t_frame then
-            t_frame.visible = _DEBUG or is_admin(player)
-            t_frame.tournament1vs1_admin.tournament1vs1_force_start.enabled = not storage.tournament1vs1_started
-            t_frame.tournament1vs1_admin.tournament1vs1_pause_toggle.caption = ternary(game.tick_paused, 'Unpause', 'Pause')
+            local t_player = t_frame.tournament1vs1_player
+            t_player.tournament1vs1_ready.visible = _DEBUG or (not is_spec and not storage.tournament1vs1_started)
+            t_player.tournament1vs1_ready.enabled = _DEBUG or not storage.players_ready[player.force.name]
+            t_player.visible = t_player.tournament1vs1_ready.visible
+
+            local t_admin = t_frame.tournament1vs1_admin
+            t_admin.visible = _DEBUG or is_admin(player)
+            t_admin.tournament1vs1_force_start.enabled = not storage.tournament1vs1_started
+            t_admin.tournament1vs1_pause_toggle.caption = ternary(game.tick_paused, 'Unpause', 'Pause')
+
+            t_frame.visible = t_player.visible or t_admin.visible
         end
     end
 
     -- == SUBFOOTER ===============================================================
     do
+        footer.bb_floating_shortcut_button.visible = _DEBUG or not tournament1vs1_mode
+
         footer.research_info_button.visible = _DEBUG
             or storage.bb_show_research_info == 'always'
             or (storage.bb_show_research_info == 'spec' and player.force.name == 'spectator')
