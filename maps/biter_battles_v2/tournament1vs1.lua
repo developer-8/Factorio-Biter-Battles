@@ -1,3 +1,4 @@
+local Color = require('utils.color_presets')
 local Event = require('utils.event')
 local Functions = require('maps.biter_battles_v2.functions')
 local Tables = require('maps.biter_battles_v2.tables')
@@ -130,6 +131,58 @@ function Public.prepare_start_tournament1vs1_game()
     for ticks = 60, 600, 60 do
         Task.set_timeout_in_ticks(ticks, countdown_captain_start_token)
     end
+
+
+    local text_x = -20
+    local text_y = -3
+    local scale = 4
+    local north_name = ''
+    for _, player in pairs(game.forces.north.players) do
+        if north_name ~= '' then
+            north_name = north_name .. " & "
+        end
+        north_name = north_name .. player.name
+    end
+    rendering.draw_text({
+        text = north_name,
+        surface = game.surfaces[storage.bb_surface_name],
+        target = {text_x, text_y},
+        color = { r = 120, g = 120, b = 255 },
+        scale = scale,
+        font = "infinite",
+        forces = {"spectator"},
+        alignment = 'center',
+        vertical_alignment = 'middle',
+    })
+    rendering.draw_text({
+        text = "vs",
+        surface = game.surfaces[storage.bb_surface_name],
+        target = {text_x, 0},
+        color = Color.light_grey,
+        scale = scale,
+        font = "infinite",
+        forces = {"spectator"},
+        alignment = 'center',
+        vertical_alignment = 'middle',
+    })
+    local south_name = ''
+    for _, player in pairs(game.forces.south.players) do
+        if south_name ~= '' then
+            south_name = south_name .. " & "
+        end
+        south_name = south_name .. player.name
+    end
+    rendering.draw_text({
+        text = south_name,
+        surface = game.surfaces[storage.bb_surface_name],
+        target = {text_x, -text_y},
+        color = { r = 255, g = 65, b = 65 },
+        scale = scale,
+        font = "infinite",
+        forces = {"spectator"},
+        alignment = 'center',
+        vertical_alignment = 'middle',
+    })
 end
 
 
