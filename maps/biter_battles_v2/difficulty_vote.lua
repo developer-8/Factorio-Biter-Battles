@@ -217,7 +217,7 @@ local function on_player_joined_game(event)
                         end
                     end
                 else
-                    if is_admin(player) then
+                    if is_admin(player) and not tournament1vs1_mode then
                         poll_difficulty(player)
                     end
                 end
