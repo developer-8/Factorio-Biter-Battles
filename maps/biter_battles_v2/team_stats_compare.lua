@@ -416,6 +416,11 @@ function TeamStatsCompare.toggle_team_stats(player)
         return
     end
 
+    if tournament1vs1_mode and player.force.name ~= 'spectator' and not storage.bb_game_won_by_team then
+        player.print('You can only view team stats as a spectator or after the game is over.')
+        return
+    end
+
     TeamStatsCompare.show_stats(player)
 end
 
