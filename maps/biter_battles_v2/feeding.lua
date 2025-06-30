@@ -78,7 +78,7 @@ local function print_feeding_msg(player, food, flask_amount)
     local formatted_amount =
         table.concat({ '[font=heading-1][color=255,255,255]' .. flask_amount .. '[/color][/font]' })
 
-    if flask_amount >= 20 then
+    if flask_amount >= 20 or tournament1vs1_mode then
         game.print(
             table.concat({
                 colored_player_name,
