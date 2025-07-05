@@ -521,8 +521,7 @@ local function generate_starting_area(surface, chunk_pos, rng)
                         -- none
                     else
                         if distance_from_spawn_wall > 0 and distance_from_spawn_wall > rng(1, 5) then
-                            local name = rng(0, 1) == 0 and 'hazard-concrete-left' or 'hazard-concrete-right'
-                            concrete[#concrete + 1] = { name = name, position = pos }
+                            concrete[#concrete + 1] = { name = 'stone-path', position = pos }
                         else
                             concrete[#concrete + 1] = { name = 'concrete', position = pos }
                         end
