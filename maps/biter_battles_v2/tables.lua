@@ -104,6 +104,20 @@ Public.spawn_ore = {
         small_patches = 0,
     },
 }
+if tournament1vs1_mode then
+    Public.spawn_ore['iron-ore'].size = 18.75
+    Public.spawn_ore['iron-ore'].small_patches = 0
+
+    Public.spawn_ore['copper-ore'].size = 16.25
+    Public.spawn_ore['copper-ore'].big_patches = 2
+    Public.spawn_ore['copper-ore'].small_patches = 0
+
+    Public.spawn_ore['coal'].size = 16.25
+    Public.spawn_ore['coal'].small_patches = 0
+
+    Public.spawn_ore['stone'].size = 13.75
+    Public.spawn_ore['stone'].big_patches = 2
+end
 
 Public.difficulties = {
     [1] = {
