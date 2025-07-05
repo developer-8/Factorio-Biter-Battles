@@ -427,6 +427,9 @@ end
 local DEFAULT_HIDDEN_TILE = 'dirt-3'
 
 local spawn_wall_radius = 116
+if tournament1vs1_mode then
+    spawn_wall_radius = 90
+end
 local spawn_wall_noise_multiplier = 15
 local spawn_wall_noise_deviation = spawn_wall_noise_multiplier * spawn_wall_noise_amp_sum
 
@@ -499,17 +502,41 @@ local function generate_starting_area(surface, chunk_pos, rng)
             local distance_to_center = tile_distance_to_center(x, y)
             local noise = get_noise(spawn_wall_noise, x, y, seed, 25000) * spawn_wall_noise_multiplier
             local distance_from_spawn_wall = distance_to_center + noise - spawn_wall_radius
-
             local pos = { x, y }
+
+            if tournament1vs1_mode then
+                if distance_from_spawn_wall < -10 and distance_from_spawn_wall < rng(-15, -10) then
+                    if get_tile(x, y).collides_with('resource') then
+                        concrete_foundation[#concrete_foundation + 1] = { name = DEFAULT_HIDDEN_TILE, position = pos }
+                    end
+                    local name = 'refined-concrete'
+
+                    concrete[#concrete + 1] = { name = name, position = pos }
+                elseif distance_from_spawn_wall < 5 then
+                    if get_tile(x, y).collides_with('resource') then
+                        concrete_foundation[#concrete_foundation + 1] = { name = DEFAULT_HIDDEN_TILE, position = pos }
+                    end
+
+                    if distance_from_spawn_wall > rng(-9, 5) then
+                        -- none
+                    else
+                        if distance_from_spawn_wall > 0 and distance_from_spawn_wall > rng(1, 5) then
+                            local name = rng(0, 1) == 0 and 'hazard-concrete-left' or 'hazard-concrete-right'
+                            concrete[#concrete + 1] = { name = name, position = pos }
+                        else
+                            concrete[#concrete + 1] = { name = 'concrete', position = pos }
+                        end
+                    end
+                end
+
+                goto continue
+            end
+
             if distance_from_spawn_wall < -10 then
                 if get_tile(x, y).collides_with('resource') then
                     concrete_foundation[#concrete_foundation + 1] = { name = DEFAULT_HIDDEN_TILE, position = pos }
                 end
                 concrete[#concrete + 1] = { name = 'refined-concrete', position = pos }
-                goto continue
-            end
-
-            if tournament1vs1_mode then
                 goto continue
             end
 
@@ -571,7 +598,7 @@ local function generate_starting_area(surface, chunk_pos, rng)
         end
     end
 
-    surface.set_tiles(concrete_foundation, false)
+    surface.set_tiles(concrete_foundation, true)
     local tile_gen = get_tile_generator(surface, chunk_pos)
     if tile_gen then
         for _, filler in pairs(concrete_foundation) do
@@ -1171,21 +1198,11 @@ local function generate_spawn_ore(surface, rng)
     -- area. One element was removed on purpose - we don't want to
     -- draw ore in the lake which overlaps with chunk [0,-1]. All ores
     -- will be mirrored to south.
+    -- stylua: ignore
     local grid = {
-        { -2, -3 },
-        { -1, -3 },
-        { 0, -3 },
-        { 1, -3 },
-        { 2, -3 },
-        { -2, -2 },
-        { -1, -2 },
-        { 0, -2 },
-        { 1, -2 },
-        { 2, -2 },
-        { -2, -1 },
-        { -1, -1 },
-        { 1, -1 },
-        { 2, -1 },
+        { -2, -3 }, { -1, -3 }, { 0, -3 }, { 1, -3, }, { 2, -3 },
+        { -2, -2 }, { -1, -2 }, { 0, -2 }, { 1, -2, }, { 2, -2 },
+        { -2, -1 }, { -1, -1 },            { 1, -1, }, { 2, -1 },
     }
 
     -- Calculate left_top position of a chunk. It will be used as origin
