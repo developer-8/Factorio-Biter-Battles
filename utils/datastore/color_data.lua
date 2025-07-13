@@ -3,7 +3,7 @@ local Event = require('utils.event')
 local Global = require('utils.global')
 local Token = require('utils.token')
 
-local color_data_set = 'colors'
+local color_data_set = 'color'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local math_round = math.round
@@ -62,7 +62,6 @@ end)
 Event.on_nth_tick(
    601,
    function()
-        local color_data = {}
         for _, player in pairs(game.connected_players) do
             local color = get_color_round(player.color)
             local name = player.name
@@ -75,12 +74,8 @@ Event.on_nth_tick(
                 )
             then
                 player_colors[name] = color
-                color_data[name] = color
+                set_data(color_data_set, name, color)
             end
-        end
-
-        if next(color_data) then
-            set_data(color_data_set, 'players', color_data)
         end
    end
 )
