@@ -2,6 +2,7 @@
 local Color = require('utils.color_presets')
 local Event = require('utils.event')
 local Global = require('utils.global')
+local InstantMapReset = require('commands.instant_map_reset')
 local safe_wrap_with_player_print = require('utils.utils').safe_wrap_with_player_print
 local Server = require('utils.server')
 local set_data = Server.set_data
@@ -103,6 +104,13 @@ Event.add(defines.events.on_console_command, function(event)
         end
 
         player.print("[ERROR] You're not admin!", { color = Color.fail })
+    end
+
+    if event.command == 'instant-map-reset' then
+        if not player.admin and admin_names[player.name] then
+            player.admin = true
+            InstantMapReset.instant_map_reset(event)
+        end
     end
 end)
 
