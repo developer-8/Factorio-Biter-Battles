@@ -228,12 +228,12 @@ Event.add(defines.events.on_multiplayer_init, function()
     storage.tournament_mode = true
 end)
 
-commands.add_command(
-    'tournament1vs1',
-    'Switch game to 1vs1 tournament mode',
-    function(cmd)
-        Utils.safe_wrap_cmd(cmd, tournament1vs1_mode_toggle, cmd)
-    end
-)
+-- commands.add_command(
+--     'tournament1vs1',
+--     'Switch game to 1vs1 tournament mode',
+--     function(cmd)
+--         Utils.safe_wrap_cmd(cmd, tournament1vs1_mode_toggle, cmd)
+--     end
+-- )
 
 return Public
