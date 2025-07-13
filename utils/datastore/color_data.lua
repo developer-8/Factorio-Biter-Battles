@@ -1,56 +1,50 @@
-local Token = require('utils.token')
-local Color = require('utils.color_presets')
 local Server = require('utils.server')
 local Event = require('utils.event')
+local Global = require('utils.global')
+local Token = require('utils.token')
 
 local color_data_set = 'colors'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
+local math_round = math.round
 
 local Public = {}
 
-local color_table = {
-    default = {},
-    red = {},
-    green = {},
-    blue = {},
-    orange = {},
-    yellow = {},
-    pink = {},
-    purple = {},
-    white = {},
-    black = {},
-    gray = {},
-    brown = {},
-    cyan = {},
-    acid = {},
-}
+local player_colors = {}
+
+Global.register({
+    player_colors = player_colors,
+}, function(t)
+    this = t
+end)
+
+local function get_color_round(color)
+    return {
+        r = math_round(color.r, 3),
+        g = math_round(color.g, 3),
+        b = math_round(color.b, 3),
+        a = math_round(color.a, 3)
+    }
+end
 
 local fetch = Token.register(function(data)
     local key = data.key
-    local value = data.value
+    local color = data.value
     local player = game.get_player(key)
     if not player then
         return
     end
-    if value then
-        player.color = value.color[1]
-        player.chat_color = value.chat[1]
+    if color then
+        player.color = color
+        player.chat_color = color
     end
 end)
 
 --- Tries to get data from the webpanel and applies the value to the player.
 -- @param data_set player token
 function Public.fetch(key)
-    local secs = Server.get_current_time()
-    if secs == nil then
-        return
-    else
-        try_get_data(color_data_set, key, fetch)
-    end
+    try_get_data(color_data_set, key, fetch)
 end
-
-local fetcher = Public.fetch
 
 Event.add(defines.events.on_player_joined_game, function(event)
     local player = game.get_player(event.player_index)
@@ -58,38 +52,37 @@ Event.add(defines.events.on_player_joined_game, function(event)
         return
     end
 
-    fetcher(player.name)
+    if tournament1vs1_mode and player.online_time == 0 then
+        -- save current player color for now but will be updated after fetch
+        player_colors[player.name] = get_color_round(player.color)
+        Public.fetch(player.name)
+    end
 end)
 
-Event.add(defines.events.on_console_command, function(event)
-    local player_index = event.player_index
-    if not player_index or event.command ~= 'color' then
-        return
-    end
-
-    local player = game.get_player(player_index)
-    if not player or not player.valid then
-        return
-    end
-
-    local secs = Server.get_current_time()
-    if not secs then
-        return
-    end
-
-    local param = event.parameters
-    local color = player.color
-    local chat = player.chat_color
-    param = string.lower(param)
-    if param then
-        for word in param:gmatch('%S+') do
-            if color_table[word] then
-                set_data(color_data_set, player.name, { color = { color }, chat = { chat } })
-                player.print('Your color has been saved.', { color = Color.success })
-                return true
+Event.on_nth_tick(
+   601,
+   function()
+        local color_data = {}
+        for _, player in pairs(game.connected_players) do
+            local color = get_color_round(player.color)
+            local name = player.name
+            local prev_color = player_colors[name]
+            if prev_color
+                and (  prev_color.r ~= color.r
+                    or prev_color.g ~= color.g
+                    or prev_color.b ~= color.b
+                    or prev_color.a ~= color.a
+                )
+            then
+                player_colors[name] = color
+                color_data[name] = color
             end
         end
-    end
-end)
+
+        if next(color_data) then
+            set_data(color_data_set, '', color_data)
+        end
+   end
+)
 
 return Public

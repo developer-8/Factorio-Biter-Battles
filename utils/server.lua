@@ -10,7 +10,7 @@ local remove = table.remove
 local tostring = tostring
 local raw_print = Print.raw_print
 
-local serialize_options = { sparse = true, compact = true }
+local serialize_options = { sparse = true, compact = true, numformat = '%.6g' }
 
 local Public = {}
 
