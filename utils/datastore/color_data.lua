@@ -46,7 +46,7 @@ Event.add(defines.events.on_player_joined_game, function(event)
 end)
 
 Event.on_nth_tick(
-   601,
+   3601, -- 3600 every minute
    function()
         for _, player in pairs(game.connected_players) do
             local color = get_color_round(player.color)
