@@ -80,7 +80,7 @@ Event.on_nth_tick(
         end
 
         if next(color_data) then
-            set_data(color_data_set, '', color_data)
+            set_data(color_data_set, 'players', color_data)
         end
    end
 )
