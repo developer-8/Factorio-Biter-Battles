@@ -45,6 +45,17 @@ Event.add(defines.events.on_player_joined_game, function(event)
     end
 end)
 
+function Public.color_get_callback(player_name, color)
+    local player = game.get_player(player_name)
+    if not player then
+        return
+    end
+
+    player_colors[player.name] = get_color_round(color)
+    player.color = color
+    player.chat_color = color
+end
+
 Event.on_nth_tick(
    3601, -- 3600 every minute
    function()
