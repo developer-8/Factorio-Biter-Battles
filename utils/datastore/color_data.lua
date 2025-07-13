@@ -1,11 +1,10 @@
 local Server = require('utils.server')
 local Event = require('utils.event')
 local Global = require('utils.global')
-local Token = require('utils.token')
 
 local color_data_set = 'color'
 local set_data = Server.set_data
-local try_get_data = Server.try_get_data
+local get_data_color = Server.get_data_color
 local math_round = math.round
 
 local Public = {}
@@ -27,23 +26,10 @@ local function get_color_round(color)
     }
 end
 
-local fetch = Token.register(function(data)
-    local key = data.key
-    local color = data.value
-    local player = game.get_player(key)
-    if not player then
-        return
-    end
-    if color then
-        player.color = color
-        player.chat_color = color
-    end
-end)
-
 --- Tries to get data from the webpanel and applies the value to the player.
 -- @param data_set player token
 function Public.fetch(key)
-    try_get_data(color_data_set, key, fetch)
+    get_data_color(key)
 end
 
 Event.add(defines.events.on_player_joined_game, function(event)
