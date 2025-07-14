@@ -60,6 +60,7 @@ function Public.setup_new_game()
         game.print('>>> Players have been frozen!', { color = { r = 111, g = 111, b = 255 } })
     end
 
+    storage.tournament1vs1_chart_tags = {}
     storage.difficulty_vote_value = 1
     storage.difficulty_vote_index = 5
 
@@ -226,6 +227,59 @@ end
 
 Event.add(defines.events.on_multiplayer_init, function()
     storage.tournament_mode = true
+end)
+
+
+-- add player tag on map view
+Event.add(defines.events.on_player_changed_position, function(event)
+    if not tournament1vs1_mode then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+    local force_name = player.force.name
+    if force_name ~= 'north' and force_name ~= 'south' then
+        return;
+    end
+
+    if not player.character or not player.character.valid then
+        return
+    end
+
+    local player_tag = storage.tournament1vs1_chart_tags[player.name]
+    if player_tag then
+        player_tag.destroy()
+    end
+
+    storage.tournament1vs1_chart_tags[player.name] = game.forces.spectator.add_chart_tag(
+        player.physical_surface,
+        {
+            position = player.character.position,
+            text = player.name, -- '⬤ ' ..  player.name,
+            icon = {
+                type = 'virtual',
+                name = 'signal-dot'
+            }
+        }
+    )
+end)
+
+-- remove player chart tag if player changes force
+Event.add(defines.events.on_player_changed_force, function(event)
+    if not tournament1vs1_mode then
+        return
+    end
+
+    local force_name = event.force.name
+    if force_name ~= 'north' and force_name ~= 'south' then
+        return;
+    end
+
+    local player = game.get_player(event.player_index)
+    local player_tag = storage.tournament1vs1_chart_tags[player.name]
+    if player_tag then
+        player_tag.destroy()
+    end
 end)
 
 -- commands.add_command(
