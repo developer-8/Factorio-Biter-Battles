@@ -208,8 +208,8 @@ function Public.queue_reveal_map()
     local height = 500 -- for one side
 
     if tournament1vs1_mode then
-        width = 128
-        height = 128
+        width = 500
+        height = 450
     end
 
 
