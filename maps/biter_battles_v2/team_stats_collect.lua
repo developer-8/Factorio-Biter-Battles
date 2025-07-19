@@ -184,6 +184,10 @@ local function update_teamstats()
         end
     end
 
+    if tournament1vs1_mode then
+        -- dont need TEAMSTATS-PERIODIC in 1v1
+        return
+    end
     local last_print = storage.last_teamstats_print_at or 0
     if tick - last_print > 5 * 60 * 60 then
         log({ '', '[TEAMSTATS-PERIODIC]', helpers.table_to_json(team_stats) })
