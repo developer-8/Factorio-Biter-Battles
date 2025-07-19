@@ -84,6 +84,8 @@ end
 
 function Public.player_ready(player)
     game.print(player.name .. " is ready!", {0,250,0})
+    log(player.name .. " is ready!")
+
     storage.players_ready[player.force.name] = true
     if storage.training_mode then
         Public.prepare_start_tournament1vs1_game()

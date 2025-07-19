@@ -1470,6 +1470,7 @@ local function on_gui_click(event)
 	if name == "tournament1vs1_force_start" then
         element.enabled = false
         game.print("The game has been force-started by " .. player.name, {r = 255, g = 255, b = 0})
+        log("The game has been force-started by " .. player.name)
 		Tournament1vs1.prepare_start_tournament1vs1_game()
 		return
 	end
@@ -1478,9 +1479,11 @@ local function on_gui_click(event)
         if game.tick_paused then
             game.tick_paused = false
             game.print("The game has been unpaused by " .. player.name, {r = 255, g = 255, b = 0})
+            log("The game has been unpaused by " .. player.name)
         else
             game.tick_paused = true
             game.print("The game has been paused by " .. player.name, {r = 255, g = 255, b = 0})
+            log("The game has been paused by " .. player.name)
         end
         Public.refresh()
 		return
