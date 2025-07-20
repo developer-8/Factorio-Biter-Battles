@@ -1,6 +1,7 @@
 local Color = require('utils.color_presets')
 local Event = require('utils.event')
 local Functions = require('maps.biter_battles_v2.functions')
+local Server = require('utils.server')
 local Tables = require('maps.biter_battles_v2.tables')
 local Task = require('utils.task')
 local TeamManager = require('maps.biter_battles_v2.team_manager')
@@ -80,6 +81,8 @@ function Public.start_tournament1vs1_game()
         TeamManager.unfreeze_players()
         game.print('>>> Players have been unfrozen!', { color = { r = 255, g = 77, b = 77 } })
     end
+
+    Server.to_server_game_start('')
 end
 
 function Public.player_ready(player)

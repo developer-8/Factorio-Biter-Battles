@@ -502,7 +502,12 @@ function Public.silo_death(event)
         })
 
         Server.to_discord_embed(discord_message)
-        log({ '', '[TEAMSTATS-FINAL]', helpers.table_to_json(storage.team_stats) })
+        if tournament1vs1_mode then
+            Server.to_server_game_over('')
+        else 
+            log({ '', '[TEAMSTATS-FINAL]', helpers.table_to_json(storage.team_stats) })
+        end
+
 
         storage.results_sent_south = false
         storage.results_sent_north = false

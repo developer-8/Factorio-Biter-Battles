@@ -62,6 +62,8 @@ local player_leave_tag = '[PLAYER-LEAVE]'
 local special_game_end_tag = '[SPECIAL-GAME-END]'
 local data_add_onlinetime_tag = '[DATA-ADD-TOTAL-ONLINE-TIME]'
 local data_set_total_onlinetime_tag = '[DATA-SET-TOTAL-ONLINE-TIME]'
+local data_game_start_tag = '[DATA-GAME-START]'
+local data_game_over_tag = '[DATA-GAME-OVER]'
 
 Public.raw_print = raw_print
 
@@ -104,6 +106,14 @@ end
 
 function Public.get_data_color(message)
     raw_print(data_get_color_tag .. message)
+end
+
+function Public.to_server_game_start(message)
+    raw_print(data_game_start_tag .. message)
+end
+
+function Public.to_server_game_over(message)
+    raw_print(data_game_over_tag .. message)
 end
 
 --- Sends a message to the linked discord channel. The message is not sanitized of markdown.
