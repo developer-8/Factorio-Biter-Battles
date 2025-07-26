@@ -139,6 +139,10 @@ function Public.prepare_start_tournament1vs1_game()
     end
 
 
+    storage.tournament1vs1_players = {
+        north = {},
+        south = {}
+    }
     local text_x = -20
     local text_y = -3
     local scale = 4
@@ -148,6 +152,7 @@ function Public.prepare_start_tournament1vs1_game()
             north_name = north_name .. " & "
         end
         north_name = north_name .. player.name
+        table.insert(storage.tournament1vs1_players.north, player.name)
     end
     rendering.draw_text({
         text = north_name,
@@ -177,6 +182,7 @@ function Public.prepare_start_tournament1vs1_game()
             south_name = south_name .. " & "
         end
         south_name = south_name .. player.name
+        table.insert(storage.tournament1vs1_players.south, player.name)
     end
     rendering.draw_text({
         text = south_name,

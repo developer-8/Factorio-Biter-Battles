@@ -503,8 +503,8 @@ function Public.silo_death(event)
 
         Server.to_discord_embed(discord_message)
         if tournament1vs1_mode then
-            Server.to_server_game_over('')
-        else 
+            Server.to_server_game_over(helpers.table_to_json(storage.tournament1vs1_players))
+        else
             log({ '', '[TEAMSTATS-FINAL]', helpers.table_to_json(storage.team_stats) })
         end
 
