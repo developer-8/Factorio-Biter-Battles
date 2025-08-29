@@ -664,7 +664,7 @@ function Public.create_main_gui(player)
     -- Tournament1vs1 admin controls
     if tournament1vs1_mode then
         local join_frame =
-        sp.add({ type = 'frame', name = 'tournament1vs1_frame', style = 'bordered_frame', direction = 'vertical' })
+            sp.add({ type = 'frame', name = 'tournament1vs1_frame', style = 'bordered_frame', direction = 'vertical' })
         gui_style(join_frame, { vertical_align = 'center' })
 
         local flow = join_frame.add({ type = 'flow', name = 'tournament1vs1_player', direction = 'horizontal' })
@@ -675,7 +675,7 @@ function Public.create_main_gui(player)
         local button = flow.add({
             type = 'button',
             name = 'tournament1vs1_ready',
-            caption = 'Ready'
+            caption = 'Ready',
         })
         gui_style(button, { padding = 2, maximal_width = 54, maximal_height = 28 })
 
@@ -686,7 +686,7 @@ function Public.create_main_gui(player)
             type = 'button',
             name = 'tournament1vs1_force_start',
             tooltip = style.bold('Force start'),
-            caption = 'Force start'
+            caption = 'Force start',
         })
         gui_style(button, { padding = 2, maximal_width = 88, maximal_height = 28 })
 
@@ -1461,33 +1461,33 @@ local function on_gui_click(event)
     end
 
     -- 1vs1 tournament  buttons
-    if name == "tournament1vs1_ready" then
+    if name == 'tournament1vs1_ready' then
         element.enabled = false
         Tournament1vs1.player_ready(player)
         return
-	end
+    end
 
-	if name == "tournament1vs1_force_start" then
+    if name == 'tournament1vs1_force_start' then
         element.enabled = false
-        game.print("The game has been force-started by " .. player.name, {r = 255, g = 255, b = 0})
-        log("The game has been force-started by " .. player.name)
-		Tournament1vs1.prepare_start_tournament1vs1_game()
-		return
-	end
+        game.print('The game has been force-started by ' .. player.name, { r = 255, g = 255, b = 0 })
+        log('The game has been force-started by ' .. player.name)
+        Tournament1vs1.prepare_start_tournament1vs1_game()
+        return
+    end
 
-	if name == "tournament1vs1_pause_toggle" then
+    if name == 'tournament1vs1_pause_toggle' then
         if game.tick_paused then
             game.tick_paused = false
-            game.print("The game has been unpaused by " .. player.name, {r = 255, g = 255, b = 0})
-            log("The game has been unpaused by " .. player.name)
+            game.print('The game has been unpaused by ' .. player.name, { r = 255, g = 255, b = 0 })
+            log('The game has been unpaused by ' .. player.name)
         else
             game.tick_paused = true
-            game.print("The game has been paused by " .. player.name, {r = 255, g = 255, b = 0})
-            log("The game has been paused by " .. player.name)
+            game.print('The game has been paused by ' .. player.name, { r = 255, g = 255, b = 0 })
+            log('The game has been paused by ' .. player.name)
         end
         Public.refresh()
-		return
-	end
+        return
+    end
 end
 
 local function on_player_joined_game(event)

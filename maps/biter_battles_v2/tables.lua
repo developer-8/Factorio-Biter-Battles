@@ -32,13 +32,13 @@ Public.upgrade_modifiers = {
 }
 
 Public.food_values = {
-    ["firearm-magazine"] = {value = 0.00055, name = "yellow ammo", color = "197, 178, 0"},
-    ["stone-wall"] = {value = 0.0014, name = "wall", color = '105, 105, 105'},
-    ["piercing-rounds-magazine"] = {value = 0.0025, name = "red ammo", color = "224, 0, 0"},
-    ["gun-turret"] = {value = 0.0105, name = "gun turret", color = '50, 255, 50'},
-    ["gate"] = {value = 0.0120, name = "gate", color = "150, 25, 255"},
-    ["defender-capsule"] = {value = 0.0350, name = "capsule bot", color = "100, 200, 255"},
-    ["flamethrower-ammo"] = {value = 0.0800, name = "flamer ammo", color = "255, 255, 255"},
+    ['firearm-magazine'] = { value = 0.00055, name = 'yellow ammo', color = '197, 178, 0' },
+    ['stone-wall'] = { value = 0.0014, name = 'wall', color = '105, 105, 105' },
+    ['piercing-rounds-magazine'] = { value = 0.00265, name = 'red ammo', color = '224, 0, 0' },
+    ['gun-turret'] = { value = 0.0105, name = 'gun turret', color = '50, 255, 50' },
+    ['gate'] = { value = 0.0126, name = 'gate', color = '150, 25, 255' },
+    ['defender-capsule'] = { value = 0.0370, name = 'capsule bot', color = '100, 200, 255' },
+    ['flamethrower-ammo'] = { value = 0.0800, name = 'flamer ammo', color = '255, 255, 255' },
 }
 
 Public.gui_foods = {}
@@ -48,8 +48,8 @@ Public.food_long_to_short = {}
 for k, v in pairs(Public.food_values) do
     Public.gui_foods[k] = math.floor(v.value * 10000) .. ' Mutagen strength'
     table.insert(Public.food_value_table_version, v.value)
-    table.insert(Public.food_long_and_short, {short_name = v.name, long_name = k})
-    Public.food_long_to_short[k] = {short_name = v.name, indexScience = #Public.food_value_table_version}
+    table.insert(Public.food_long_and_short, { short_name = v.name, long_name = k })
+    Public.food_long_to_short[k] = { short_name = v.name, indexScience = #Public.food_value_table_version }
 end
 Public.gui_foods['raw-fish'] =
     'Send a fish to spy for 45 seconds.\nLeft Mouse Button: Send one fish.\nRMB: Sends 5 fish.\nShift+LMB: Send all fish.\nShift+RMB: Send half of all fish.'

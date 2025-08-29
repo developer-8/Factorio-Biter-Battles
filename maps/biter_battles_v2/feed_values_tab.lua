@@ -140,8 +140,7 @@ local function add_feed_values(player, element, food_product_info)
             type = 'label',
             caption = get_science_text(food_long_and_short[i].long_name, food_long_and_short[i].short_name),
         })
-        local label =
-            t_summary.add({ type = 'label', caption = string.format('%.1f', mutagen_val * 10000) })
+        local label = t_summary.add({ type = 'label', caption = string.format('%.1f', mutagen_val * 10000) })
         label.style.minimal_width = headersSummary[2][1]
         label.style.horizontal_align = 'right'
 

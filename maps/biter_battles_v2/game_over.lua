@@ -509,7 +509,6 @@ function Public.silo_death(event)
             log({ '', '[TEAMSTATS-FINAL]', helpers.table_to_json(storage.team_stats) })
         end
 
-
         storage.results_sent_south = false
         storage.results_sent_north = false
         silo_kaboom(entity)

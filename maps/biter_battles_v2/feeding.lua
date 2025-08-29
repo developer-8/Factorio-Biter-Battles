@@ -1,4 +1,4 @@
-local Color = require "utils.color_presets"
+local Color = require('utils.color_presets')
 local bb_config = require('maps.biter_battles_v2.config')
 local FeedingCalculations = require('maps.biter_battles_v2.feeding_calculations')
 local Functions = require('maps.biter_battles_v2.functions')
@@ -292,7 +292,7 @@ function Public.feed_biters_from_inventory(player, food)
     end
     if tournament1vs1_mode and tick < storage.feeding_timeout then
         player.print(
-            "Please wait " .. math.round((storage.feeding_timeout - tick)/60) .. " seconds", 
+            'Please wait ' .. math.round((storage.feeding_timeout - tick) / 60) .. ' seconds',
             { color = Color.red }
         )
         return
@@ -352,7 +352,7 @@ function Public.feed_biters_mixed_from_inventory(player, button)
     end
     if tournament1vs1_mode and tick < storage.feeding_timeout then
         player.print(
-            "Please wait " .. math.round((storage.feeding_timeout - tick)/60) .. " seconds",
+            'Please wait ' .. math.round((storage.feeding_timeout - tick) / 60) .. ' seconds',
             { color = Color.red }
         )
         return

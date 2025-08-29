@@ -159,7 +159,7 @@ function TeamStatsCompare.show_stats(player)
     top_table.style.column_alignments[3] = 'left'
     add_simple_force_stats('north', top_table)
 
-    -- largest/last food  
+    -- largest/last food
     local largest_food = Tables.food_long_and_short[#Tables.food_long_and_short].long_name
     local space_sci_mutagen = Tables.food_values[largest_food].value
     if true then
@@ -222,13 +222,15 @@ function TeamStatsCompare.show_stats(player)
             if not exclude_forces[force_name] then
                 add_small_label(science_table, {
                     caption = format_with_thousands_sep(produced),
-                    tooltip = '[item=' .. largest_food .. '] equivalent: '
-                        .. format_one_sig_fig(produced * food_mutagen / space_sci_mutagen),
+                    tooltip = '[item=' .. largest_food .. '] equivalent: ' .. format_one_sig_fig(
+                        produced * food_mutagen / space_sci_mutagen
+                    ),
                 })
                 add_small_label(science_table, {
                     caption = format_with_thousands_sep(consumed),
-                    tooltip = '[item=' .. largest_food .. '] equivalent: '
-                        .. format_one_sig_fig(consumed * food_mutagen / space_sci_mutagen),
+                    tooltip = '[item=' .. largest_food .. '] equivalent: ' .. format_one_sig_fig(
+                        consumed * food_mutagen / space_sci_mutagen
+                    ),
                 })
             else
                 add_small_label(science_table, { caption = '' })
@@ -236,8 +238,9 @@ function TeamStatsCompare.show_stats(player)
             end
             add_small_label(science_table, {
                 caption = format_with_thousands_sep(sent),
-                tooltip = '[item=' .. largest_food .. '] equivalent: '
-                    .. format_one_sig_fig(sent * food_mutagen / space_sci_mutagen),
+                tooltip = '[item=' .. largest_food .. '] equivalent: ' .. format_one_sig_fig(
+                    sent * food_mutagen / space_sci_mutagen
+                ),
             })
             total_sent_mutagen = total_sent_mutagen + (food_stats.sent or 0) * food_mutagen
             total_produced_mutagen = total_produced_mutagen + (food_stats.produced or 0) * food_mutagen

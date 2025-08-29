@@ -22,7 +22,7 @@ local function get_color_round(color)
         r = math_round(color.r, 3),
         g = math_round(color.g, 3),
         b = math_round(color.b, 3),
-        a = math_round(color.a, 3)
+        a = math_round(color.a, 3),
     }
 end
 
@@ -57,14 +57,16 @@ function Public.color_get_callback(player_name, color)
 end
 
 Event.on_nth_tick(
-   3601, -- 3600 every minute
-   function()
+    3601, -- 3600 every minute
+    function()
         for _, player in pairs(game.connected_players) do
             local color = get_color_round(player.color)
             local name = player.name
             local prev_color = player_colors[name]
-            if prev_color
-                and (  prev_color.r ~= color.r
+            if
+                prev_color
+                and (
+                    prev_color.r ~= color.r
                     or prev_color.g ~= color.g
                     or prev_color.b ~= color.b
                     or prev_color.a ~= color.a
@@ -74,7 +76,7 @@ Event.on_nth_tick(
                 set_data(color_data_set, name, color)
             end
         end
-   end
+    end
 )
 
 return Public

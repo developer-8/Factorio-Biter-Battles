@@ -100,9 +100,7 @@ Event.add(defines.events.on_player_joined_game, function(event)
         return
     end
     if tournament1vs1_mode then
-        if
-        not trusted[player.name]
-        then
+        if not trusted[player.name] then
             trusted[player.name] = true
         end
     end

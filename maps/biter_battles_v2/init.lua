@@ -212,7 +212,6 @@ function Public.queue_reveal_map()
         height = 450
     end
 
-
     for x = 16, width, 32 do
         for y = 16, height, 32 do
             q_push(chart_queue, { { -x, -y }, { -x, -y } })
