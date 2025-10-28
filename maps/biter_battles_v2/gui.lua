@@ -1568,8 +1568,8 @@ end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
+    Init.set_default_settings(player)
     if player.online_time == 0 and not tournament1vs1_mode then
-        Init.set_default_settings(player)
         Functions.set_random_color(player)
         Functions.show_intro(player)
     end
