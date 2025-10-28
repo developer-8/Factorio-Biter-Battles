@@ -1,5 +1,73 @@
 return {
     {
+        number = 737,
+        date = '2025-10-24',
+        author = 'cogito123',
+        comment = [[(#737) Added player setting to toggle if items can dropped into inserters]],
+    },
+    {
+        number = 738,
+        date = '2025-10-24',
+        author = 'cogito123, Max1000',
+        comment = [[(#738) Difficulty ramp-up now uses match time instead of time since map reset]],
+    },
+    {
+        number = 736,
+        date = '2025-09-19',
+        author = 'cogito123',
+        comment = [[(#736) Multisilo changes:
+  - Optimized fish spawning during rocket silo explosion
+  - Reduced the number of fish spawned during rocket silo explosion
+  - Added the /remove-silo command
+  - Rocket silo explosion can now destroy all other rocket silos within the blast radius
+  - Fixed an issue where the player wasn’t teleported back to the closest rocket silo when returning from spectator]],
+    },
+    {
+        number = 734,
+        date = '2025-09-05',
+        author = 'Max1000',
+        comment = [[(#734) Increase map moisture to improve tree spawning]],
+    },
+    {
+        number = 735,
+        date = '2025-09-05',
+        author = 'developer',
+        comment = [[(#735) Prevent the game-over UI from stretching horizontally]],
+    },
+    {
+        number = 731,
+        date = '2025-09-02',
+        author = 'cogito123',
+        comment = [[(#731) Multisilo changes:
+  - Add a small icon in the top-left bar indicating whether multisilo is enabled
+  - Fix biter waves not doing anything after destroying the rocket silo
+  - Improve rocket silo anti-grief protection so it no longer requires respawning]],
+    },
+    {
+        number = 732,
+        date = '2025-09-02',
+        author = 'cogito123',
+        comment = [[(#732) Add player colors to the output of inventory-costs command]],
+    },
+    {
+        number = 733,
+        date = '2025-09-02',
+        author = 'cogito123',
+        comment = [[(#733) Make new players appear in bright colors]],
+    },
+    {
+        number = 730,
+        date = '2025-08-20',
+        author = 'developer',
+        comment = [[(#730) Preserve jailed players' permissions across map resets]],
+    },
+    {
+        number = 729,
+        date = '2025-08-08',
+        author = 'cogito123',
+        comment = [[(#729) Add built-in multi silo special]],
+    },
+    {
         number = 728,
         date = '2025-07-12',
         author = 'developer',

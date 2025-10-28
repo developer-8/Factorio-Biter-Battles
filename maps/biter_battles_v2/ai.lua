@@ -51,41 +51,46 @@ local function get_threat_ratio(biter_force_name)
     return ratio
 end
 
+---Goes through each valid force and sends direct attack to all rocket silos.
+---If it's not a multi-silo special, then only the one at a spawn is considered.
 Public.send_near_biters_to_silo = function()
     if Functions.get_ticks_since_game_start() < 108000 then
-        return
-    end
-    if not storage.rocket_silo['north'] then
-        return
-    end
-    if not storage.rocket_silo['south'] then
         return
     end
     if storage.bb_game_won_by_team then
         return
     end
 
-    game.surfaces[storage.bb_surface_name].set_multi_command({
-        command = {
-            type = defines.command.attack,
-            target = storage.rocket_silo['north'],
-            distraction = defines.distraction.none,
-        },
-        unit_count = 8,
-        force = 'north_biters',
-        unit_search_distance = 64,
-    })
+    for _, force in pairs(game.forces) do
+        local f_name = force.name
+        local list = storage.rocket_silo[f_name]
+        -- If no list, then not a valid force.
+        if list == nil then
+            goto send_biters_silo_loop_1
+        end
 
-    game.surfaces[storage.bb_surface_name].set_multi_command({
-        command = {
-            type = defines.command.attack,
-            target = storage.rocket_silo['south'],
-            distraction = defines.distraction.none,
-        },
-        unit_count = 8,
-        force = 'south_biters',
-        unit_search_distance = 64,
-    })
+        for _, silo in ipairs(list) do
+            if silo == nil or not silo.valid then
+                -- Strange if we enter here.
+                goto send_biters_silo_loop_2
+            end
+
+            game.surfaces[storage.bb_surface_name].set_multi_command({
+                command = {
+                    type = defines.command.attack,
+                    target = silo,
+                    distraction = defines.distraction.none,
+                },
+                unit_count = 8,
+                force = f_name .. '_biters',
+                unit_search_distance = 64,
+            })
+
+            ::send_biters_silo_loop_2::
+        end
+
+        ::send_biters_silo_loop_1::
+    end
 end
 
 local function get_random_spawner(biter_force_name)
@@ -385,7 +390,7 @@ Public.raise_evo = function()
         return
     end
     if storage.difficulty_vote_index and 1 <= storage.difficulty_vote_index and 4 >= storage.difficulty_vote_index then
-        local matchTimeInMinutes = game.ticks_played / 3600
+        local matchTimeInMinutes = Functions.get_ticks_since_game_start() / 3600
         storage.difficulty_vote_value = ((matchTimeInMinutes / 470) ^ 3.7)
             + Tables.difficulties[storage.difficulty_vote_index].value
     end

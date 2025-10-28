@@ -1,6 +1,7 @@
 local Public = {}
 
 local bb_config = require('maps.biter_battles_v2.config')
+local Pool = require('maps.biter_battles_v2.pool')
 local Color = require('utils.color_presets')
 
 local math_random = math.random
@@ -152,6 +153,21 @@ function Public.calculate_strike_position(unit_group, target_position)
     return unit_group.surface.find_non_colliding_position('stone-furnace', nominal_strike_position, 96, 1)
 end
 
+local function shuffle_indices(list)
+    local indices = Pool.malloc(#list)
+    for i = 1, #list do
+        indices[i] = i
+    end
+
+    -- Fisher–Yates shuffle
+    for i = #indices, 2, -1 do
+        local j = math_random(i)
+        indices[i], indices[j] = indices[j], indices[i]
+    end
+
+    return indices
+end
+
 function Public.initiate(unit_group, target_force_name, strike_position, target_position)
     if storage.bb_game_won_by_team then
         return
@@ -182,13 +198,18 @@ function Public.initiate(unit_group, target_force_name, strike_position, target_
         },
     }
 
-    local silo = storage.rocket_silo[target_force_name]
-    if silo then -- check for multi-silo special
-        chain[#chain + 1] = {
-            type = defines.command.attack,
-            target = silo,
-            distraction = defines.distraction.by_damage,
-        }
+    -- Chain all possible silos in random order so biters have always something to do.
+    local list = storage.rocket_silo[target_force_name]
+    local indices = shuffle_indices(list)
+    for _, i in ipairs(indices) do
+        local silo = list[i]
+        if silo and silo.valid then
+            chain[#chain + 1] = {
+                type = defines.command.attack,
+                target = silo,
+                distraction = defines.distraction.by_damage,
+            }
+        end
     end
 
     unit_group.set_command({

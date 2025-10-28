@@ -1,6 +1,7 @@
 local AiTargets = require('maps.biter_battles_v2.ai_targets')
 local BBGui = require('maps.biter_battles_v2.gui')
 local Captain_special = require('comfy_panel.special_games.captain')
+local MultiSilo = require('comfy_panel.special_games.multi_silo')
 local Color = require('utils.color_presets')
 local Event = require('utils.event')
 local Functions = require('maps.biter_battles_v2.functions')
@@ -16,24 +17,13 @@ local Tournament1vs1 = require('maps.biter_battles_v2.tournament1vs1')
 local Task = require('utils.task')
 local Token = require('utils.token')
 local team_stats_compare = require('maps.biter_battles_v2.team_stats_compare')
-local math_random = math.random
 local gui_style = require('utils.utils').gui_style
 
+local math_sqrt = math.sqrt
+local math_random = math.random
+local math_floor = math.floor
+
 local Public = {}
-
-local gui_values = {
-    ['north'] = { color1 = { r = 0.55, g = 0.55, b = 0.99 } },
-    ['south'] = { color1 = { r = 0.99, g = 0.33, b = 0.33 } },
-}
-
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math.random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
-end
 
 function Public.reveal_map()
     for _, f in pairs({ 'north', 'south', 'player', 'spectator' }) do
@@ -42,11 +32,67 @@ function Public.reveal_map()
     end
 end
 
+---@param surface LuaSurface
+---@param origin { x: number, y: number }
+---Spawn fishes around origin point
+local function drop_fish(surface, origin)
+    local req = {
+        position = { 0, 0 },
+        stack = { name = 'raw-fish', count = 1 },
+        enable_looted = false,
+        allow_belts = true,
+    }
+
+    ---Maximum radius around the origin where fish might drop
+    local RADIUS = 32
+    -- Lower the radius in case it's multisilo, so that if there are lots of silos placed
+    -- next to each other and they blow up - we don't have to look as intensely for
+    -- non-colliding position to spawn fish.
+    if not MultiSilo.is_disabled() then
+        RADIUS = 12
+    end
+
+    local RADIUS_SQ = RADIUS * RADIUS
+    ---Controls how quickly density decreases with distance from origin
+    local DENSITY_FALLOFF = 1.2
+    ---Scales fish count
+    local SCALING_FACTOR = 0.28
+    ---Random sub-tile jitter, up to 0.9 in steps of 0.1
+    local POSITION_JITTER_MAX = 9
+
+    for dx = -RADIUS, RADIUS, 1 do
+        for dy = -RADIUS, RADIUS, 1 do
+            local dist_sq = dx * dx + dy * dy
+            -- Is the point NOT within the radius
+            if dist_sq >= RADIUS_SQ then
+                goto drop_fish_cont
+            end
+
+            ---Distance to silo
+            local dist = math_sqrt(dist_sq)
+            ---Amount of fish to scatter
+            local count = math_floor((RADIUS - dist * DENSITY_FALLOFF) * SCALING_FACTOR)
+            if count <= 0 then
+                goto drop_fish_cont
+            end
+
+            local px, py = origin.x + dx, origin.y + dy
+            for _ = 1, count do
+                req.position[1] = px + math_random(0, POSITION_JITTER_MAX) * 0.1
+                req.position[2] = py + math_random(0, POSITION_JITTER_MAX) * 0.1
+                surface.spill_item_stack(req)
+            end
+
+            ::drop_fish_cont::
+        end
+    end
+end
+
 local function silo_kaboom(entity)
     local surface = entity.surface
     local center_position = entity.position
-    local force = entity.force
-    surface.create_entity({
+    local force = entity.force.name .. '_biters'
+    local req = {
         name = 'atomic-rocket',
         position = center_position,
         force = force,
@@ -54,30 +100,10 @@ local function silo_kaboom(entity)
         target = center_position,
         max_range = 1,
         speed = 0.1,
-    })
+    }
 
-    local drops = {}
-    for x = -32, 32, 1 do
-        for y = -32, 32, 1 do
-            local p = { x = center_position.x + x, y = center_position.y + y }
-            local distance_to_silo = math.sqrt((center_position.x - p.x) ^ 2 + (center_position.y - p.y) ^ 2)
-            local count = math.floor((32 - distance_to_silo * 1.2) * 0.28)
-            if distance_to_silo < 32 and count > 0 then
-                table.insert(drops, { p, count })
-            end
-        end
-    end
-    for _, drop in pairs(drops) do
-        for _ = 1, drop[2], 1 do
-            entity.surface.spill_item_stack({
-                position = { drop[1].x + math.random(0, 9) * 0.1, drop[1].y + math.random(0, 9) * 0.1 },
-                stack = { name = 'raw-fish', count = 1 },
-                enable_looted = false,
-                force = nil,
-                allow_belts = true,
-            })
-        end
-    end
+    surface.create_entity(req)
+    drop_fish(surface, center_position)
 end
 
 local function get_sorted_list(column_name, score_list)
@@ -152,6 +178,9 @@ local function show_endgame_gui(player)
     local winner_style = { font = 'default-bold', font_color = { r = 0.33, g = 0.66, b = 0.9 } }
 
     local main_frame = Gui.add_left_element(player, { type = 'frame', name = 'mvps', direction = 'vertical' })
+    gui_style(main_frame, {
+        horizontally_stretchable = false,
+    })
     local flow = main_frame.add({ type = 'flow', style = 'vertical_flow', direction = 'vertical' })
     local inner_frame = flow.add({ type = 'frame', style = 'inside_shallow_frame_packed', direction = 'vertical' })
 
@@ -372,21 +401,23 @@ local function set_victory_time()
 end
 
 local function freeze_all_biters(surface)
-    for _, e in pairs(surface.find_entities_filtered({ force = 'north_biters' })) do
-        e.active = false
-    end
-    for _, e in pairs(surface.find_entities_filtered({ force = 'south_biters' })) do
-        e.active = false
-    end
-    for _, e in pairs(surface.find_entities_filtered({ force = 'north_biters_boss' })) do
-        e.active = false
-    end
-    for _, e in pairs(surface.find_entities_filtered({ force = 'south_biters_boss' })) do
-        e.active = false
+    local filter = {
+        force = {
+            'north_biters',
+            'south_biters',
+            'north_biters_boss',
+            'south_biters_boss',
+        },
+    }
+
+    for _, e in pairs(surface.find_entities_filtered(filter)) do
+        if e.name ~= 'atomic-rocket' then
+            e.active = false
+        end
     end
 end
 
-local function biter_killed_the_silo(event)
+local function biter_damage_source(event)
     local force = event.force
     if force ~= nil then
         return string.find(event.force.name, '_biters')
@@ -401,164 +432,206 @@ local function biter_killed_the_silo(event)
     return false
 end
 
-local function respawn_silo(event)
-    local entity = event.entity
-    local surface = entity.surface
-    if surface == nil or not surface.valid then
-        log('Surface ' .. storage.bb_surface_name .. ' invalid - cannot respawn silo')
-        return
-    end
-
-    local force_name = entity.force.name
-    -- Has to be created instead of clone otherwise it will be moved to south.
-    entity = surface.create_entity({
-        name = entity.name,
-        position = entity.position,
-        surface = surface,
-        force = force_name,
-        create_build_effect_smoke = false,
-    })
-    entity.minable_flag = false
-    entity.health = 5
-    storage.rocket_silo[force_name] = entity
-    AiTargets.start_tracking(entity)
-end
-
 local function log_to_db(message, appendBool)
     helpers.write_file('logToDBgameResult', message, appendBool, 0)
 end
 
-function Public.silo_death(event)
+---@param silo LuaEntity
+---@param list LuaEntity[]
+---Go through list of silos and return its index or nil.
+---@return integer|nil
+local function get_silo(silo, list)
+    for index, entry in ipairs(list) do
+        if silo == entry then
+            return index
+        end
+    end
+
+    return nil
+end
+
+---@param silo LuaEntity
+---Searches for position and list where silo is stored.
+---Returns index of a silo in the list and reference to the list.
+---@return [integer, LuaEntity[]]|nil
+local function find_silo_ref(silo)
+    ---@type integer|nil
+    local index = nil
+    ---@type LuaEntity[]|nil
+    local list = nil
+    for _, force in pairs(game.forces) do
+        local f_name = force.name
+        list = storage.rocket_silo[f_name]
+        -- If no list, then not a valid force.
+        if list == nil then
+            goto find_silo_ref_loop
+        end
+
+        -- If silo tracked, break
+        index = get_silo(silo, list)
+        if index ~= nil then
+            return { index, list }
+        end
+
+        ::find_silo_ref_loop::
+    end
+
+    return nil
+end
+
+---@param event LuaOnEntityDamaged
+---Activated on final hit to the rocket-silo. We check if the hit was
+---coming from biter source, if not we add health to entity to keep it
+---alive.
+function Public.on_entity_damaged(event)
     local entity = event.entity
-    if not entity.valid then
+    local ref = find_silo_ref(entity)
+    if ref == nil then
         return
     end
-    if entity.name ~= 'rocket-silo' then
+
+    -- If biter wasn't cause of damage, then add health to silo as anti griefer mechanism.
+    if not biter_damage_source(event) then
+        entity.health = 5
         return
     end
+end
+
+---@param entity LuaEntity
+---Activated on any rocket-silo death. If the silo is tracked as objective
+---then we explode it and check if it was a last one in given force. If yes
+---then game is concluded.
+function Public.on_entity_died(entity)
     if storage.bb_game_won_by_team then
         return
     end
-    if entity == storage.rocket_silo.south or entity == storage.rocket_silo.north then
-        -- Respawn Silo in case of friendly fire
-        if not biter_killed_the_silo(event) then
-            respawn_silo(event)
-            return
+
+    local ref = find_silo_ref(entity)
+    if ref == nil then
+        return
+    end
+
+    -- The only way to destroy the silo is to make last hit from biter force.
+    local index, list = ref[1], ref[2]
+    table.remove(list, index)
+    silo_kaboom(entity)
+
+    -- Check if it was last silo. Only relevant in multi-silo special.
+    if #list >= 1 then
+        return
+    end
+
+    storage.bb_game_won_by_team = enemy_team_of[entity.force.name]
+
+    set_victory_time()
+    team_stats_compare.game_over()
+    local north_players = 'NORTH PLAYERS: \\n'
+    local south_players = 'SOUTH PLAYERS: \\n'
+
+    for _, player in pairs(game.connected_players) do
+        player.play_sound({ path = 'utility/game_won', volume_modifier = 1 })
+        local main_frame = Gui.get_left_element(player, 'bb_main_gui')
+        if main_frame then
+            main_frame.visible = false
         end
-
-        storage.bb_game_won_by_team = enemy_team_of[entity.force.name]
-
-        set_victory_time()
-        team_stats_compare.game_over()
-        local north_players = 'NORTH PLAYERS: \\n'
-        local south_players = 'SOUTH PLAYERS: \\n'
-
-        for _, player in pairs(game.connected_players) do
-            player.play_sound({ path = 'utility/game_won', volume_modifier = 1 })
-            local main_frame = Gui.get_left_element(player, 'bb_main_gui')
-            if main_frame then
-                main_frame.visible = false
-            end
-            show_endgame_gui(player)
-            if player.force.name == 'south' then
-                south_players = south_players .. player.name .. '   '
-            elseif player.force.name == 'north' then
-                north_players = north_players .. player.name .. '   '
-            end
+        show_endgame_gui(player)
+        if player.force.name == 'south' then
+            south_players = south_players .. player.name .. '   '
+        elseif player.force.name == 'north' then
+            north_players = north_players .. player.name .. '   '
         end
+    end
 
-        storage.spy_fish_timeout.north = game.tick + 999999
-        storage.spy_fish_timeout.south = game.tick + 999999
-        storage.server_restart_timer = 150
+    storage.spy_fish_timeout.north = game.tick + 999999
+    storage.spy_fish_timeout.south = game.tick + 999999
+    storage.server_restart_timer = 150
 
-        game.speed = 1
+    game.speed = 1
 
-        local north_evo = math.floor(1000 * storage.bb_evolution['north_biters']) * 0.1
-        local north_threat = math.floor(storage.bb_threat['north_biters'])
-        local south_evo = math.floor(1000 * storage.bb_evolution['south_biters']) * 0.1
-        local south_threat = math.floor(storage.bb_threat['south_biters'])
+    local north_evo = math.floor(1000 * storage.bb_evolution['north_biters']) * 0.1
+    local north_threat = math.floor(storage.bb_threat['north_biters'])
+    local south_evo = math.floor(1000 * storage.bb_evolution['south_biters']) * 0.1
+    local south_threat = math.floor(storage.bb_threat['south_biters'])
 
-        local discord_message = table.concat({
-            '*** Team ',
-            storage.bb_game_won_by_team,
-            ' has won! ***',
-            '\\n',
-            storage.victory_time,
-            '\\n\\n',
-            'North Evo: ',
-            north_evo,
-            '%\\n',
-            'North Threat: ',
-            north_threat,
-            '\\n\\n',
-            'South Evo: ',
-            south_evo,
-            '%\\n',
-            'South Threat: ',
-            south_threat,
-            '\\n\\n',
-            north_players,
-            '\\n\\n',
-            south_players,
-        })
+    local discord_message = table.concat({
+        '*** Team ',
+        storage.bb_game_won_by_team,
+        ' has won! ***',
+        '\\n',
+        storage.victory_time,
+        '\\n\\n',
+        'North Evo: ',
+        north_evo,
+        '%\\n',
+        'North Threat: ',
+        north_threat,
+        '\\n\\n',
+        'South Evo: ',
+        south_evo,
+        '%\\n',
+        'South Threat: ',
+        south_threat,
+        '\\n\\n',
+        north_players,
+        '\\n\\n',
+        south_players,
+    })
 
-        Server.to_discord_embed(discord_message)
-        if tournament1vs1_mode then
-            Server.to_server_game_over(helpers.table_to_json(storage.tournament1vs1_players))
+    Server.to_discord_embed(discord_message)
+    if tournament1vs1_mode then
+        Server.to_server_game_over(helpers.table_to_json(storage.tournament1vs1_players))
+    else
+        log({ '', '[TEAMSTATS-FINAL]', helpers.table_to_json(storage.team_stats) })
+    end
+
+    storage.results_sent_south = false
+    storage.results_sent_north = false
+
+    freeze_all_biters(entity.surface)
+    local special = storage.special_games_variables.captain_mode
+    if special and not special.prepaPhase then
+        storage.tournament_mode = false
+        game.print('Tournament mode is now disabled')
+        game.print('Updating logs for the game')
+        if special.communityPickingMode then
+            Server.send_special_game_state('[COMMUNITY-PICK]')
         else
-            log({ '', '[TEAMSTATS-FINAL]', helpers.table_to_json(storage.team_stats) })
+            Server.send_special_game_state('[CAPTAIN-SPECIAL]')
         end
-
-        storage.results_sent_south = false
-        storage.results_sent_north = false
-        silo_kaboom(entity)
-
-        freeze_all_biters(entity.surface)
-        local special = storage.special_games_variables.captain_mode
-        if special and not special.prepaPhase then
-            storage.tournament_mode = false
-            game.print('Tournament mode is now disabled')
-            game.print('Updating logs for the game')
-            if special.communityPickingMode then
-                Server.send_special_game_state('[COMMUNITY-PICK]')
-            else
-                Server.send_special_game_state('[CAPTAIN-SPECIAL]')
-            end
-            log_to_db('>Game has ended\n', false)
-            log_to_db('[RefereeName]' .. special.stats.InitialReferee .. '\n', true)
-            if special.stats.NorthInitialCaptain then
-                log_to_db('[CaptainNorth]' .. special.stats.NorthInitialCaptain .. '\n', true)
-            end
-            if special.stats.SouthInitialCaptain then
-                log_to_db('[CaptainSouth]' .. special.stats.SouthInitialCaptain .. '\n', true)
-            end
-            local listPicks = table.concat(special.stats.northPicks, ';')
-            log_to_db('[NorthTeam]' .. listPicks .. '\n', true)
-            listPicks = table.concat(special.stats.southPicks, ';')
-            log_to_db('[SouthTeam]' .. listPicks .. '\n', true)
-            log_to_db('[Gamelength]' .. game.ticks_played .. '\n', true)
-            log_to_db('[StartTick]' .. special.stats.tickGameStarting .. '\n', true)
-            log_to_db('[WinnerTeam]' .. storage.bb_game_won_by_team .. '\n', true)
-            log_to_db('[ExtraInfo]' .. special.stats.extrainfo .. '\n', true)
-            log_to_db('[SpecialEnabled]' .. special.stats.specialEnabled .. '\n', true)
-            log_to_db('[CommunityPickMode]' .. tostring(special.communityPickingMode) .. '\n', true)
-            for _, player in pairs(game.players) do
-                if player.connected and (player.force.name == 'north' or player.force.name == 'south') then
-                    Captain_special.captain_log_end_time_player(player)
-                end
-                if special.stats.playerPlaytimes[player.name] ~= nil then
-                    log_to_db(
-                        '[Playtime][' .. player.name .. ']' .. special.stats.playerPlaytimes[player.name] .. '\n',
-                        true
-                    )
-                end
-            end
-            if special.stats.communityPickInfo then
-                log_to_db('[CommunityPickInfo]' .. helpers.table_to_json(special.stats.communityPickInfo) .. '\n', true)
-            end
-            log_to_db('[TeamStats]' .. helpers.table_to_json(storage.team_stats) .. '\n', true)
-            log_to_db('>End of log', true)
+        log_to_db('>Game has ended\n', false)
+        log_to_db('[RefereeName]' .. special.stats.InitialReferee .. '\n', true)
+        if special.stats.NorthInitialCaptain then
+            log_to_db('[CaptainNorth]' .. special.stats.NorthInitialCaptain .. '\n', true)
         end
+        if special.stats.SouthInitialCaptain then
+            log_to_db('[CaptainSouth]' .. special.stats.SouthInitialCaptain .. '\n', true)
+        end
+        local listPicks = table.concat(special.stats.northPicks, ';')
+        log_to_db('[NorthTeam]' .. listPicks .. '\n', true)
+        listPicks = table.concat(special.stats.southPicks, ';')
+        log_to_db('[SouthTeam]' .. listPicks .. '\n', true)
+        log_to_db('[Gamelength]' .. game.ticks_played .. '\n', true)
+        log_to_db('[StartTick]' .. special.stats.tickGameStarting .. '\n', true)
+        log_to_db('[WinnerTeam]' .. storage.bb_game_won_by_team .. '\n', true)
+        log_to_db('[ExtraInfo]' .. special.stats.extrainfo .. '\n', true)
+        log_to_db('[SpecialEnabled]' .. special.stats.specialEnabled .. '\n', true)
+        log_to_db('[CommunityPickMode]' .. tostring(special.communityPickingMode) .. '\n', true)
+        for _, player in pairs(game.players) do
+            if player.connected and (player.force.name == 'north' or player.force.name == 'south') then
+                Captain_special.captain_log_end_time_player(player)
+            end
+            if special.stats.playerPlaytimes[player.name] ~= nil then
+                log_to_db(
+                    '[Playtime][' .. player.name .. ']' .. special.stats.playerPlaytimes[player.name] .. '\n',
+                    true
+                )
+            end
+        end
+        if special.stats.communityPickInfo then
+            log_to_db('[CommunityPickInfo]' .. helpers.table_to_json(special.stats.communityPickInfo) .. '\n', true)
+        end
+        log_to_db('[TeamStats]' .. helpers.table_to_json(storage.team_stats) .. '\n', true)
+        log_to_db('>End of log', true)
     end
 end
 
@@ -894,6 +967,7 @@ function Public.generate_new_map()
             suspend_frame.destroy()
         end
         BBGui.create_main_gui(player)
+        BBGui.refresh_feature_flags(player)
     end
     Tournament1vs1.setup_new_game()
     game.reset_time_played()
@@ -915,4 +989,5 @@ end
 
 Event.add(defines.events.on_console_chat, chat_with_everyone)
 Event.add(defines.events.on_player_joined_game, Public.automatic_captain_draw_buttons)
+
 return Public

@@ -7,6 +7,7 @@ local DifficultyVote = require('maps.biter_battles_v2.difficulty_vote')
 local Event = require('utils.event')
 local Feeding = require('maps.biter_battles_v2.feeding')
 local Functions = require('maps.biter_battles_v2.functions')
+local Init = require('maps.biter_battles_v2.init')
 local Gui = require('utils.gui')
 local PlayerUtils = require('utils.player')
 local ResearchInfo = require('maps.biter_battles_v2.research_info')
@@ -16,6 +17,7 @@ local Tables = require('maps.biter_battles_v2.tables')
 local Tournament1vs1 = require('maps.biter_battles_v2.tournament1vs1')
 local gui_style = require('utils.utils').gui_style
 local has_life = require('comfy_panel.special_games.limited_lives').has_life
+local MultiSilo = require('comfy_panel.special_games.multi_silo')
 
 local food_names = Tables.gui_foods
 
@@ -304,6 +306,28 @@ local function get_data_for_refresh_statistics()
         },
     }
 end
+
+---@param player LuaPlayer
+---Creates GUI element that displays flags/icons depicting enabled features
+function Public.create_feature_flags(player)
+    local t = Gui.add_top_element(player, {
+        type = 'table',
+        name = 'bb_feature_flags',
+        column_count = 1,
+    })
+
+    t.style.maximal_width = 25
+    t.style.maximal_height = 25 * 3
+end
+
+---@param player LuaPlayer
+function Public.refresh_feature_flags(player)
+    local t = Gui.get_top_element(player, 'bb_feature_flags')
+    t.clear()
+
+    MultiSilo.update_feature_flag(player)
+end
+
 ---@param player LuaPlayer
 function Public.create_statistics_gui_button(player)
     if Gui.get_top_element(player, 'bb_toggle_statistics') then
@@ -1004,6 +1028,52 @@ local function on_player_left_game(event)
     drop_burners(player)
 end
 
+---@param player LuaPlayer
+---Finds a suitable position to put back player into land from spectator in case
+---they were put there by AFK timer.
+---@return { x: number, y: number }|nil
+local function get_stored_position(player, _)
+    local p = nil
+    local surface = player.surface
+    local p_data = get_player_data(player)
+    if p_data and p_data.position then
+        p = surface.find_non_colliding_position('character', p_data.position, 16, 0.5)
+        get_player_data(player, true)
+    end
+
+    return p
+end
+
+---@param player LuaPlayer
+---@param force LuaForce
+---Finds a suitable position to put back player into land from spectator
+---@return { x: number, y: number }|nil
+local function get_spawn_position(player, force)
+    local surface = player.surface
+    return surface.find_non_colliding_position('character', force.get_spawn_position(surface), 16, 0.5)
+end
+
+---@param player LuaPlayer
+---@param force LuaForce
+---Finds a suitable position to teleport player from the island
+---@return { x: number, y: number }|nil
+local function get_teleport_position(player, force)
+    local clbk = {
+        get_stored_position,
+        MultiSilo.get_spawn_position,
+        get_spawn_position,
+    }
+
+    for _, fn in ipairs(clbk) do
+        local position = fn(player, force)
+        if position then
+            return position
+        end
+    end
+
+    return nil
+end
+
 function join_team(player, force_name, forced_join, auto_join)
     if not player.character then
         return
@@ -1089,25 +1159,17 @@ function join_team(player, force_name, forced_join, auto_join)
                 return
             end
         end
-        local p = nil
-        local p_data = get_player_data(player)
-        if p_data and p_data.position then
-            p = surface.find_non_colliding_position('character', p_data.position, 16, 0.5)
-            get_player_data(player, true)
-        else
-            p = surface.find_non_colliding_position(
-                'character',
-                game.forces[force_name].get_spawn_position(surface),
-                16,
-                0.5
-            )
-        end
-        if not p then
-            game.print('No spawn position found for ' .. player.name .. '!', { color = { 255, 0, 0 } })
+        local force = game.forces[force_name]
+        local position = get_teleport_position(player, force)
+        if not position then
+            local msg = 'No spawn position found for ' .. player.name .. '!'
+            game.print(msg, { color = { 255, 0, 0 } })
+            log(msg)
             return
         end
-        player.character.teleport(p, surface)
-        player.force = game.forces[force_name]
+
+        player.character.teleport(position)
+        player.force = force
         player.character.destructible = true
         Public.refresh()
         game.permissions.get_group('Default').add_player(player)
@@ -1159,6 +1221,7 @@ function join_team(player, force_name, forced_join, auto_join)
     player.spectator = false
     player.show_on_map = true
     Public.burners_balance(player)
+    MultiSilo.on_player_changed_force(player)
     Public.clear_copy_history(player)
     Public.refresh()
 
@@ -1237,7 +1300,7 @@ function spectate(player, forced_join, stored_position)
     player.character.driving = false
     player.clear_cursor()
     drop_burners(player, forced_join)
-
+    MultiSilo.save_position(player)
     if stored_position then
         local p_data = get_player_data(player)
         p_data.position = player.physical_position
@@ -1269,17 +1332,29 @@ end
 local spy_forces = { { 'north', 'south' }, { 'south', 'north' } }
 function Public.spy_fish()
     for _, f in pairs(spy_forces) do
-        if storage.spy_fish_timeout[f[1]] - game.tick > 0 then
+        local friendly = f[1]
+        local enemy = f[2]
+        if storage.spy_fish_timeout[friendly] - game.tick > 0 then
             local r = 96
             local surface = game.surfaces[storage.bb_surface_name]
-            for _, player in pairs(game.forces[f[2]].connected_players) do
-                game.forces[f[1]].chart(surface, {
+            for _, player in pairs(game.forces[enemy].connected_players) do
+                game.forces[friendly].chart(surface, {
                     { player.physical_position.x - r, player.physical_position.y - r },
                     { player.physical_position.x + r, player.physical_position.y + r },
                 })
             end
+
+            if not MultiSilo.is_disabled() then
+                for _, silo in ipairs(storage.rocket_silo[enemy]) do
+                    local pos = silo.position
+                    game.forces[friendly].chart(surface, {
+                        { pos.x - r, pos.y - r },
+                        { pos.x + r, pos.y + r },
+                    })
+                end
+            end
         else
-            storage.spy_fish_timeout[f[1]] = 0
+            storage.spy_fish_timeout[friendly] = 0
         end
     end
 end
@@ -1378,7 +1453,8 @@ local function on_gui_click(event)
     end
 
     if name == 'bb_spectate' then
-        if player.physical_position.y ^ 2 + player.physical_position.x ^ 2 < 12000 then
+        local distance = player.physical_position.y ^ 2 + player.physical_position.x ^ 2
+        if distance < 12000 or MultiSilo.can_spectate(player) then
             spectate(player)
         else
             player.print('You are too far away from spawn to spectate.', { color = { r = 0.98, g = 0.66, b = 0.22 } })
@@ -1493,6 +1569,8 @@ end
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     if player.online_time == 0 and not tournament1vs1_mode then
+        Init.set_default_settings(player)
+        Functions.set_random_color(player)
         Functions.show_intro(player)
     end
 
