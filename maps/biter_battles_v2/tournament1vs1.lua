@@ -204,6 +204,7 @@ function Public.tournament1vs1_mode_init()
         return
     end
 
+    storage.quasi_admin_mode = true
     storage.bb_settings.map_reroll = false
     storage.feeding_timeout = 4 * 60 * 60
     storage.boundary_offset = 200
