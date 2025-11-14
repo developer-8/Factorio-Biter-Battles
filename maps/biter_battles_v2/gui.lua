@@ -1181,6 +1181,9 @@ function join_team(player, force_name, forced_join, auto_join)
         player.spectator = false
         player.show_on_map = true
         Public.burners_balance(player)
+        if storage.quasi_admin_mode then
+            Admin.switch_to_quasi_admin_mode(player, false)
+        end
         return
     end
     local pos =
@@ -1206,9 +1209,12 @@ function join_team(player, force_name, forced_join, auto_join)
 
     local i = player.character.get_inventory(defines.inventory.character_main)
     i.clear()
-    if tournament1vs1_mode then
-        Admin.swith_to_player_mode(player, false)
-    else
+
+    if storage.quasi_admin_mode then
+        Admin.switch_to_quasi_admin_mode(player, false)
+    end
+
+    if not tournament1vs1_mode then
         player.insert({ name = 'pistol', count = 1 })
         player.insert({ name = 'raw-fish', count = 3 })
         player.insert({ name = 'firearm-magazine', count = 32 })
@@ -1315,6 +1321,7 @@ function spectate(player, forced_join, stored_position)
         Server.to_discord_bold(msg)
     end
     game.permissions.get_group('spectator').add_player(player)
+    Admin.switch_to_admin_mode(player, false)
     storage.spectator_rejoin_delay[player.name] = game.tick
     Public.create_main_gui(player)
     player.spectator = true
