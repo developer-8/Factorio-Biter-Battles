@@ -16,7 +16,7 @@
 local _base_require = require
 ---@param modname string Module path in dot notation (e.g. 'comfy_panel.special_games.multi_silo').
 ---@return unknown result The loaded module's return value.
-function require(modname)
+function       require(modname)
     if package.loaded[modname] ~= nil then
         return package.loaded[modname]
     end
